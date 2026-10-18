@@ -1,0 +1,10 @@
+{
+  "venvPath": "pipeline",
+  "venv": ".venv",
+  "extraPaths": [
+    ".",
+    "pipeline",
+    "backend",
+    "analysis"
+  ]
+}

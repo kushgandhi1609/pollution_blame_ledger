@@ -1,0 +1,233 @@
+table,column,group,description,unit,source,look_ahead
+city_hourly_final,time,id,"Hour-beginning timestamp, IST",,,0
+city_hourly_final,delhi_pm25_median,city,Median PM2.5 across valid Delhi stations (main target-like series),ug/m3,derived,0
+city_hourly_final,delhi_pm25_mean,city,Mean PM2.5 across valid Delhi stations,ug/m3,derived,0
+city_hourly_final,delhi_pm25_p10,city,10th percentile across Delhi stations,ug/m3,derived,0
+city_hourly_final,delhi_pm25_p90,city,90th percentile across Delhi stations,ug/m3,derived,0
+city_hourly_final,delhi_n_valid,city,Number of Delhi stations with valid PM2.5,count,derived,0
+city_hourly_final,delhi_n_stations,city,Number of Delhi stations kept after QC,count,derived,0
+city_hourly_final,delhi_pm25_spread,city,(P75-P25)/median across Delhi stations,,derived,0
+city_hourly_final,delhi_pm10_median,city,Delhi median PM10,ug/m3,derived,0
+city_hourly_final,delhi_no2_median,city,Delhi median NO2,ug/m3,derived,0
+city_hourly_final,delhi_so2_median,city,Delhi median SO2,ug/m3,derived,0
+city_hourly_final,delhi_co_median,city,Delhi median CO,mg/m3,derived,0
+city_hourly_final,delhi_o3_median,city,Delhi median O3,ug/m3,derived,0
+city_hourly_final,delhi_fp_traffic_z,fingerprint,Delhi median of: Mean z-score of NO2 and CO vs station's trailing 7-day history (traffic),z,derived,0
+city_hourly_final,delhi_fp_traffic_rush_ratio_no2,fingerprint,Delhi median of: Daily mean NO2 in rush hours / 12-15 h NO2 (traffic); uses the whole day,ratio,derived,1
+city_hourly_final,delhi_fp_dust_ratio,fingerprint,Delhi median of: PM10/PM2.5 (dust),ratio,derived,0
+city_hourly_final,delhi_fp_dust_z,fingerprint,Delhi median of: z-score of PM10/PM2.5 vs trailing 30-day history,z,derived,0
+city_hourly_final,delhi_fp_industrial_so2_z,fingerprint,Delhi median of: z-score of SO2 vs trailing 7-day history (industrial/coal),z,derived,0
+city_hourly_final,delhi_fp_biomass_ratio,fingerprint,Delhi median of: PM2.5/PM10 (biomass burning),ratio,derived,0
+city_hourly_final,delhi_fp_biomass_night_rise,fingerprint,Delhi median of: Night (22-05 h) minus afternoon (12-17 h) PM2.5; uses later hours,ug/m3,derived,1
+city_hourly_final,delhi_regional_background_pm25,local_regional,Delhi regional background (10th percentile),ug/m3,derived,0
+city_hourly_final,delhi_background_share,local_regional,"background / Delhi median, 0-1 (regional share of the pollution)",,derived,0
+city_hourly_final,delhi_hotspot_count,local_regional,Number of Delhi stations flagged as hotspots,count,derived,0
+city_hourly_final,frac_rising_delhi,ncr,Share of valid Delhi stations with rising_3h,,derived,0
+city_hourly_final,ncr_pm25_median,ncr,Median PM2.5 across valid NCR stations,ug/m3,derived,0
+city_hourly_final,ncr_n_valid,ncr,Number of NCR stations with valid PM2.5,count,derived,0
+city_hourly_final,ncr_n_stations,ncr,NCR stations kept after QC,count,derived,0
+city_hourly_final,frac_rising_ncr,ncr,Share of valid NCR stations with rising_3h,,derived,0
+city_hourly_final,ncr_minus_delhi_pm25,ncr,NCR median minus Delhi median,ug/m3,derived,0
+city_hourly_final,ncr_to_delhi_ratio,ncr,NCR median / Delhi median,,derived,0
+city_hourly_final,period_id,id,Index of the study period (see config PERIODS),,,0
+city_hourly_final,delhi_ncr_corr24h,ncr,Trailing 24 h correlation of Delhi and NCR median series,,derived,0
+city_hourly_final,delhi_pm25_24h_mean,city,Trailing 24 h mean of Delhi median PM2.5,ug/m3,derived,0
+city_hourly_final,delhi_pm25_diff3h,city,3 h change of Delhi median PM2.5,ug/m3,derived,0
+city_hourly_final,delhi_pm25_diff24h,city,24 h change of Delhi median PM2.5,ug/m3,derived,0
+city_hourly_final,delhi_aqi_category_24h,city,CPCB PM2.5 category from the 24 h mean,,derived,0
+city_hourly_final,regime,ncr,Rule-based scale of the episode (widespread / Delhi-concentrated / NCR-concentrated / mixed / no rise / insufficient data); heuristic,,derived,0
+city_hourly_final,delhi_missing_frac,qc,Share of Delhi stations missing at this hour,,derived,0
+city_hourly_final,ncr_missing_frac,qc,Share of NCR stations missing at this hour,,derived,0
+city_hourly_final,missing_data_warning,qc,1 if either region is missing >40% of stations,flag,derived,0
+city_hourly_final,hour,time,Hour of day (IST),h,derived,0
+city_hourly_final,dow,time,"Day of week, Monday=0",,derived,0
+city_hourly_final,month,time,Month number,,derived,0
+city_hourly_final,is_weekend,time,1 on Saturday/Sunday,flag,derived,0
+city_hourly_final,hour_sin,time,sin(2*pi*hour/24),,derived,0
+city_hourly_final,hour_cos,time,cos(2*pi*hour/24),,derived,0
+city_hourly_final,is_rush_am,time,1 for 07-10 h,flag,derived,0
+city_hourly_final,is_rush_pm,time,1 for 17-21 h,flag,derived,0
+city_hourly_final,is_night,time,1 for 22-05 h,flag,derived,0
+city_hourly_final,days_from_diwali,time,Signed days to nearest Diwali (NaN beyond 30 days),days,config,0
+city_hourly_final,diwali_window,time,1 within 2 days of Diwali,flag,config,0
+city_hourly_final,temp_c,weather,2 m temperature,C,Open-Meteo,0
+city_hourly_final,rh_pct,weather,Relative humidity,%,Open-Meteo,0
+city_hourly_final,precip_mm,weather,Precipitation,mm,Open-Meteo,0
+city_hourly_final,pressure_hpa,weather,Surface pressure,hPa,Open-Meteo,0
+city_hourly_final,cloud_pct,weather,Cloud cover,%,Open-Meteo,0
+city_hourly_final,wind_speed_ms,weather,10 m wind speed,m/s,Open-Meteo,0
+city_hourly_final,wind_speed_100m_ms,weather,100 m wind speed,m/s,Open-Meteo,0
+city_hourly_final,wind_dir_deg,weather,10 m wind direction (from),deg,Open-Meteo,0
+city_hourly_final,wind_u,weather,East-west wind component of air motion,m/s,derived,0
+city_hourly_final,wind_v,weather,North-south wind component of air motion,m/s,derived,0
+city_hourly_final,wind_dir_sin,weather,sin of wind direction,,derived,0
+city_hourly_final,wind_dir_cos,weather,cos of wind direction,,derived,0
+city_hourly_final,nw_wind_flag,weather,1 if wind from 270-350 deg (direction of the stubble belt),flag,derived,0
+city_hourly_final,blh_m,weather,Boundary-layer height (empty if the endpoint does not provide it),m,Open-Meteo,0
+city_hourly_final,ventilation_m2s,weather,blh x wind speed (dispersion capacity),m2/s,derived,0
+city_hourly_final,precip_24h_mm,weather,Rain in the last 24 h,mm,derived,0
+city_hourly_final,precip_72h_mm,weather,Rain in the last 72 h,mm,derived,0
+city_hourly_final,temp_range_24h_c,weather,Max-min temperature over 24 h (inversion proxy),C,derived,0
+city_hourly_final,pressure_change_6h,weather,6 h pressure change,hPa,derived,0
+city_hourly_final,wind_speed_roll6h,weather,6 h mean wind speed,m/s,derived,0
+city_hourly_final,stagnation_flag,weather,"1 if wind<2 m/s and low mixing (blh<500 m, or RH>80% if blh missing)",flag,derived,0
+city_hourly_final,traj_mean_speed_kmh,trajectory,Median ensemble mean parcel speed,km/h,derived,0
+city_hourly_final,traj_dist_48h_km,trajectory,Distance of the 48 h-back parcel position from Delhi,km,derived,0
+city_hourly_final,traj_origin_bearing_48h,trajectory,Bearing from Delhi to the 48 h-back position,deg,derived,0
+city_hourly_final,traj_pbhr_frac,trajectory,Share of trajectory hours spent over Punjab/Haryana (>60 km from Delhi),,derived,0
+city_hourly_final,traj_origin_sin,trajectory,sin of the 48 h origin bearing (use instead of the raw angle in models),,derived,0
+city_hourly_final,traj_origin_cos,trajectory,cos of the 48 h origin bearing,,derived,0
+city_hourly_final,fire_link_computed,trajectory,1 if fire linking was run for this hour (fire season only),flag,derived,0
+city_hourly_final,fires_linked_median,fire,Fires linked to this hour's parcels (ensemble median),count,FIRMS+Open-Meteo,0
+city_hourly_final,fires_linked_p10,fire,10th percentile over ensemble members,count,derived,0
+city_hourly_final,fires_linked_p90,fire,90th percentile over ensemble members,count,derived,0
+city_hourly_final,frp_linked_median,fire,Total fire radiative power of linked fires,MW,derived,0
+city_hourly_final,fire_lag_p10_h,fire,10th percentile of travel time to the linked fires,h,derived,0
+city_hourly_final,fire_lag_p50_h,fire,Median travel time to linked fires,h,derived,0
+city_hourly_final,fire_lag_p90_h,fire,90th percentile travel time,h,derived,0
+city_hourly_final,fire_member_agree_frac,fire,Share of ensemble members linking >=20 fires (confidence in the fire link),,derived,0
+city_hourly_final,raw_fires_24h_pbhr,fire,NAIVE baseline: fire detections in last 24 h inside the Punjab/Haryana box,count,FIRMS,0
+city_hourly_final,synthetic,id,"1 = synthetic test data, NOT real",,make_synthetic.py,0
+station_hourly_final,station_id,id,Station identifier,,stations.csv,0
+station_hourly_final,time,id,"Hour-beginning timestamp, IST",,,0
+station_hourly_final,period_id,id,Index of the study period (see config PERIODS),,,0
+station_hourly_final,co,pollutant,CO after QC,mg/m3,CPCB/OpenAQ,0
+station_hourly_final,no2,pollutant,NO2 after QC,ug/m3,CPCB/OpenAQ,0
+station_hourly_final,o3,pollutant,O3 after QC,ug/m3,CPCB/OpenAQ,0
+station_hourly_final,pm10,pollutant,PM10 after QC,ug/m3,CPCB/OpenAQ,0
+station_hourly_final,pm25,pollutant,PM2.5 after QC,ug/m3,CPCB/OpenAQ,0
+station_hourly_final,so2,pollutant,SO2 after QC,ug/m3,CPCB/OpenAQ,0
+station_hourly_final,qc_pm_inconsistent,qc,1 if PM2.5 > 1.2*PM10 + 10 (one of the two channels is suspect),flag,derived,0
+station_hourly_final,region,meta,Delhi or NCR (check needs_review in stations.csv),,stations.csv,0
+station_hourly_final,lat,meta,Station latitude,deg,stations.csv,0
+station_hourly_final,lon,meta,Station longitude,deg,stations.csv,0
+station_hourly_final,hour,time,Hour of day (IST),h,derived,0
+station_hourly_final,dow,time,"Day of week, Monday=0",,derived,0
+station_hourly_final,month,time,Month number,,derived,0
+station_hourly_final,is_weekend,time,1 on Saturday/Sunday,flag,derived,0
+station_hourly_final,hour_sin,time,sin(2*pi*hour/24),,derived,0
+station_hourly_final,hour_cos,time,cos(2*pi*hour/24),,derived,0
+station_hourly_final,is_rush_am,time,1 for 07-10 h,flag,derived,0
+station_hourly_final,is_rush_pm,time,1 for 17-21 h,flag,derived,0
+station_hourly_final,is_night,time,1 for 22-05 h,flag,derived,0
+station_hourly_final,days_from_diwali,time,Signed days to nearest Diwali (NaN beyond 30 days),days,config,0
+station_hourly_final,diwali_window,time,1 within 2 days of Diwali,flag,config,0
+station_hourly_final,pm25_pm10_ratio,ratio,"PM2.5/PM10 (needs PM10>=20, no QC inconsistency)",,derived,0
+station_hourly_final,pm10_pm25_ratio,ratio,PM10/PM2.5 (needs PM2.5>=10),,derived,0
+station_hourly_final,pm25_lag1h,temporal,PM2.5 one hour earlier (same station),ug/m3,derived,0
+station_hourly_final,pm25_lag3h,temporal,PM2.5 three hours earlier,ug/m3,derived,0
+station_hourly_final,pm25_lag24h,temporal,PM2.5 24 hours earlier,ug/m3,derived,0
+station_hourly_final,pm25_roll3h,temporal,Trailing 3-hour mean PM2.5,ug/m3,derived,0
+station_hourly_final,pm25_roll6h,temporal,Trailing 6-hour mean PM2.5,ug/m3,derived,0
+station_hourly_final,pm25_roll24h,temporal,Trailing 24-hour mean PM2.5,ug/m3,derived,0
+station_hourly_final,pm25_diff1h,temporal,PM2.5 change over 1 hour,ug/m3,derived,0
+station_hourly_final,pm25_diff3h,temporal,PM2.5 change over 3 hours,ug/m3,derived,0
+station_hourly_final,pm25_diff24h,temporal,PM2.5 change over 24 hours,ug/m3,derived,0
+station_hourly_final,rising_3h,temporal,1 if PM2.5 rose >20 ug/m3 and >15% in 3 h,flag,derived,0
+station_hourly_final,fp_traffic_z,fingerprint,Mean z-score of NO2 and CO vs station's trailing 7-day history (traffic),z,derived,0
+station_hourly_final,fp_industrial_so2_z,fingerprint,z-score of SO2 vs trailing 7-day history (industrial/coal),z,derived,0
+station_hourly_final,fp_dust_ratio,fingerprint,PM10/PM2.5 (dust),ratio,derived,0
+station_hourly_final,fp_dust_z,fingerprint,z-score of PM10/PM2.5 vs trailing 30-day history,z,derived,0
+station_hourly_final,fp_biomass_ratio,fingerprint,PM2.5/PM10 (biomass burning),ratio,derived,0
+station_hourly_final,fp_traffic_rush_ratio_no2,fingerprint,Daily mean NO2 in rush hours / 12-15 h NO2 (traffic); uses the whole day,ratio,derived,1
+station_hourly_final,fp_traffic_rush_ratio_co,fingerprint,Same for CO,ratio,derived,1
+station_hourly_final,fp_biomass_night_rise,fingerprint,Night (22-05 h) minus afternoon (12-17 h) PM2.5; uses later hours,ug/m3,derived,1
+station_hourly_final,regional_background_pm25,local_regional,10th percentile of PM2.5 across valid stations of the same region,ug/m3,derived,0
+station_hourly_final,local_excess_pm25,local_regional,Station PM2.5 minus regional background,ug/m3,derived,0
+station_hourly_final,local_excess_share,local_regional,"local_excess / PM2.5, clipped to 0-1",,derived,0
+station_hourly_final,pm25_robust_z,local_regional,Robust z of PM2.5 across stations of the region at that hour,z,derived,0
+station_hourly_final,hotspot_flag,local_regional,1 if robust z>2.5 and >40 ug/m3 above the regional median,flag,derived,0
+station_hourly_final,delhi_pm25_median,city,Median PM2.5 across valid Delhi stations (main target-like series),ug/m3,derived,0
+station_hourly_final,delhi_pm25_mean,city,Mean PM2.5 across valid Delhi stations,ug/m3,derived,0
+station_hourly_final,delhi_pm25_p10,city,10th percentile across Delhi stations,ug/m3,derived,0
+station_hourly_final,delhi_pm25_p90,city,90th percentile across Delhi stations,ug/m3,derived,0
+station_hourly_final,delhi_n_valid,city,Number of Delhi stations with valid PM2.5,count,derived,0
+station_hourly_final,delhi_n_stations,city,Number of Delhi stations kept after QC,count,derived,0
+station_hourly_final,delhi_pm25_spread,city,(P75-P25)/median across Delhi stations,,derived,0
+station_hourly_final,delhi_pm10_median,city,Delhi median PM10,ug/m3,derived,0
+station_hourly_final,delhi_no2_median,city,Delhi median NO2,ug/m3,derived,0
+station_hourly_final,delhi_so2_median,city,Delhi median SO2,ug/m3,derived,0
+station_hourly_final,delhi_co_median,city,Delhi median CO,mg/m3,derived,0
+station_hourly_final,delhi_o3_median,city,Delhi median O3,ug/m3,derived,0
+station_hourly_final,delhi_fp_traffic_z,fingerprint,Delhi median of: Mean z-score of NO2 and CO vs station's trailing 7-day history (traffic),z,derived,0
+station_hourly_final,delhi_fp_traffic_rush_ratio_no2,fingerprint,Delhi median of: Daily mean NO2 in rush hours / 12-15 h NO2 (traffic); uses the whole day,ratio,derived,1
+station_hourly_final,delhi_fp_dust_ratio,fingerprint,Delhi median of: PM10/PM2.5 (dust),ratio,derived,0
+station_hourly_final,delhi_fp_dust_z,fingerprint,Delhi median of: z-score of PM10/PM2.5 vs trailing 30-day history,z,derived,0
+station_hourly_final,delhi_fp_industrial_so2_z,fingerprint,Delhi median of: z-score of SO2 vs trailing 7-day history (industrial/coal),z,derived,0
+station_hourly_final,delhi_fp_biomass_ratio,fingerprint,Delhi median of: PM2.5/PM10 (biomass burning),ratio,derived,0
+station_hourly_final,delhi_fp_biomass_night_rise,fingerprint,Delhi median of: Night (22-05 h) minus afternoon (12-17 h) PM2.5; uses later hours,ug/m3,derived,1
+station_hourly_final,delhi_regional_background_pm25,local_regional,Delhi regional background (10th percentile),ug/m3,derived,0
+station_hourly_final,delhi_background_share,local_regional,"background / Delhi median, 0-1 (regional share of the pollution)",,derived,0
+station_hourly_final,delhi_hotspot_count,local_regional,Number of Delhi stations flagged as hotspots,count,derived,0
+station_hourly_final,frac_rising_delhi,ncr,Share of valid Delhi stations with rising_3h,,derived,0
+station_hourly_final,ncr_pm25_median,ncr,Median PM2.5 across valid NCR stations,ug/m3,derived,0
+station_hourly_final,ncr_n_valid,ncr,Number of NCR stations with valid PM2.5,count,derived,0
+station_hourly_final,ncr_n_stations,ncr,NCR stations kept after QC,count,derived,0
+station_hourly_final,frac_rising_ncr,ncr,Share of valid NCR stations with rising_3h,,derived,0
+station_hourly_final,ncr_minus_delhi_pm25,ncr,NCR median minus Delhi median,ug/m3,derived,0
+station_hourly_final,ncr_to_delhi_ratio,ncr,NCR median / Delhi median,,derived,0
+station_hourly_final,delhi_ncr_corr24h,ncr,Trailing 24 h correlation of Delhi and NCR median series,,derived,0
+station_hourly_final,delhi_pm25_24h_mean,city,Trailing 24 h mean of Delhi median PM2.5,ug/m3,derived,0
+station_hourly_final,delhi_pm25_diff3h,city,3 h change of Delhi median PM2.5,ug/m3,derived,0
+station_hourly_final,delhi_pm25_diff24h,city,24 h change of Delhi median PM2.5,ug/m3,derived,0
+station_hourly_final,delhi_aqi_category_24h,city,CPCB PM2.5 category from the 24 h mean,,derived,0
+station_hourly_final,regime,ncr,Rule-based scale of the episode (widespread / Delhi-concentrated / NCR-concentrated / mixed / no rise / insufficient data); heuristic,,derived,0
+station_hourly_final,delhi_missing_frac,qc,Share of Delhi stations missing at this hour,,derived,0
+station_hourly_final,ncr_missing_frac,qc,Share of NCR stations missing at this hour,,derived,0
+station_hourly_final,missing_data_warning,qc,1 if either region is missing >40% of stations,flag,derived,0
+station_hourly_final,temp_c,weather,2 m temperature,C,Open-Meteo,0
+station_hourly_final,rh_pct,weather,Relative humidity,%,Open-Meteo,0
+station_hourly_final,precip_mm,weather,Precipitation,mm,Open-Meteo,0
+station_hourly_final,pressure_hpa,weather,Surface pressure,hPa,Open-Meteo,0
+station_hourly_final,cloud_pct,weather,Cloud cover,%,Open-Meteo,0
+station_hourly_final,wind_speed_ms,weather,10 m wind speed,m/s,Open-Meteo,0
+station_hourly_final,wind_speed_100m_ms,weather,100 m wind speed,m/s,Open-Meteo,0
+station_hourly_final,wind_dir_deg,weather,10 m wind direction (from),deg,Open-Meteo,0
+station_hourly_final,wind_u,weather,East-west wind component of air motion,m/s,derived,0
+station_hourly_final,wind_v,weather,North-south wind component of air motion,m/s,derived,0
+station_hourly_final,wind_dir_sin,weather,sin of wind direction,,derived,0
+station_hourly_final,wind_dir_cos,weather,cos of wind direction,,derived,0
+station_hourly_final,nw_wind_flag,weather,1 if wind from 270-350 deg (direction of the stubble belt),flag,derived,0
+station_hourly_final,blh_m,weather,Boundary-layer height (empty if the endpoint does not provide it),m,Open-Meteo,0
+station_hourly_final,ventilation_m2s,weather,blh x wind speed (dispersion capacity),m2/s,derived,0
+station_hourly_final,precip_24h_mm,weather,Rain in the last 24 h,mm,derived,0
+station_hourly_final,precip_72h_mm,weather,Rain in the last 72 h,mm,derived,0
+station_hourly_final,temp_range_24h_c,weather,Max-min temperature over 24 h (inversion proxy),C,derived,0
+station_hourly_final,pressure_change_6h,weather,6 h pressure change,hPa,derived,0
+station_hourly_final,wind_speed_roll6h,weather,6 h mean wind speed,m/s,derived,0
+station_hourly_final,stagnation_flag,weather,"1 if wind<2 m/s and low mixing (blh<500 m, or RH>80% if blh missing)",flag,derived,0
+station_hourly_final,traj_mean_speed_kmh,trajectory,Median ensemble mean parcel speed,km/h,derived,0
+station_hourly_final,traj_dist_48h_km,trajectory,Distance of the 48 h-back parcel position from Delhi,km,derived,0
+station_hourly_final,traj_origin_bearing_48h,trajectory,Bearing from Delhi to the 48 h-back position,deg,derived,0
+station_hourly_final,traj_pbhr_frac,trajectory,Share of trajectory hours spent over Punjab/Haryana (>60 km from Delhi),,derived,0
+station_hourly_final,traj_origin_sin,trajectory,sin of the 48 h origin bearing (use instead of the raw angle in models),,derived,0
+station_hourly_final,traj_origin_cos,trajectory,cos of the 48 h origin bearing,,derived,0
+station_hourly_final,fire_link_computed,trajectory,1 if fire linking was run for this hour (fire season only),flag,derived,0
+station_hourly_final,fires_linked_median,fire,Fires linked to this hour's parcels (ensemble median),count,FIRMS+Open-Meteo,0
+station_hourly_final,fires_linked_p10,fire,10th percentile over ensemble members,count,derived,0
+station_hourly_final,fires_linked_p90,fire,90th percentile over ensemble members,count,derived,0
+station_hourly_final,frp_linked_median,fire,Total fire radiative power of linked fires,MW,derived,0
+station_hourly_final,fire_lag_p10_h,fire,10th percentile of travel time to the linked fires,h,derived,0
+station_hourly_final,fire_lag_p50_h,fire,Median travel time to linked fires,h,derived,0
+station_hourly_final,fire_lag_p90_h,fire,90th percentile travel time,h,derived,0
+station_hourly_final,fire_member_agree_frac,fire,Share of ensemble members linking >=20 fires (confidence in the fire link),,derived,0
+station_hourly_final,raw_fires_24h_pbhr,fire,NAIVE baseline: fire detections in last 24 h inside the Punjab/Haryana box,count,FIRMS,0
+station_hourly_final,synthetic,id,"1 = synthetic test data, NOT real",,make_synthetic.py,0
+city_daily_final,date,id,Calendar day,,,0
+city_daily_final,delhi_pm25_daily_mean,city,Mean of hourly Delhi median PM2.5 (>=18 valid hours),ug/m3,derived,0
+city_daily_final,delhi_pm25_daily_max,city,Maximum hourly Delhi median PM2.5,ug/m3,derived,0
+city_daily_final,ncr_pm25_daily_mean,ncr,Mean of hourly NCR median PM2.5,ug/m3,derived,0
+city_daily_final,fires_linked_daily_max,fire,Max hourly linked-fire count,count,derived,0
+city_daily_final,fires_linked_daily_mean,fire,Mean hourly linked-fire count,count,derived,0
+city_daily_final,raw_fires_pbhr_daily_mean,fire,Naive 24 h fire count (daily mean),count,derived,0
+city_daily_final,nw_wind_frac,weather,Share of hours with NW wind,,derived,0
+city_daily_final,wind_speed_daily_mean,weather,Mean wind speed,m/s,derived,0
+city_daily_final,blh_daily_mean,weather,Mean boundary-layer height,m,derived,0
+city_daily_final,precip_daily_mm,weather,Total precipitation,mm,derived,0
+city_daily_final,background_share_daily_mean,local_regional,Mean regional background share,,derived,0
+city_daily_final,frac_hours_widespread,ncr,Share of hours classified widespread_rise,,derived,0
+city_daily_final,frac_hours_delhi_concentrated,ncr,Share of hours classified delhi_concentrated_rise,,derived,0
+city_daily_final,diwali_window,time,1 within 2 days of Diwali,flag,config,0
+city_daily_final,is_episode_day,episode,1 if daily mean >= threshold,flag,derived,0
+city_daily_final,episode_id,episode,"Episode number (consecutive episode days, min length in config); 0 = none",,derived,0
+city_daily_final,synthetic,id,1 = synthetic test data,,,0

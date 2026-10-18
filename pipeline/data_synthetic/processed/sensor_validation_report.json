@@ -1,0 +1,13 @@
+{
+  "total_stations_evaluated": 50,
+  "injected_fault_stations": 5,
+  "fault_types": [
+    "+45% progressive calibration drift",
+    "Inlet obstruction / flatline drop to baseline"
+  ],
+  "true_positives_detected": 0,
+  "detection_rate_pct": 0.0,
+  "false_alarm_rate_pct": 0.0,
+  "benchmark_passed": false,
+  "methodology": "Inverse-Distance Weighting (k=4, 40km corridor) + Persistent Z-Score residual analysis"
+}

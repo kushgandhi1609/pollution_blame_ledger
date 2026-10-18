@@ -1,0 +1,61 @@
+{
+  "headline": "Attribution model uncertainty intervals overlapped published study ranges in 63 of 63 comparisons (100.0%).",
+  "total_comparisons": 63,
+  "total_interval_overlaps": 63,
+  "overlap_success_rate_pct": 100.0,
+  "midpoint_concordance_count": 58,
+  "midpoint_concordance_rate_pct": 92.1,
+  "contemporaneous_backtests": {
+    "total": 3,
+    "overlaps": 3,
+    "overlap_rate_pct": 100.0,
+    "episodes_evaluated": [
+      3,
+      5,
+      6
+    ]
+  },
+  "seasonal_baseline_validation": {
+    "total": 60,
+    "overlaps": 60,
+    "overlap_rate_pct": 100.0
+  },
+  "by_source": {
+    "dust": {
+      "comparisons": 12,
+      "overlaps": 12,
+      "overlap_rate_pct": 100.0,
+      "mean_divergence_pct": -0.82
+    },
+    "industry": {
+      "comparisons": 12,
+      "overlaps": 12,
+      "overlap_rate_pct": 100.0,
+      "mean_divergence_pct": -5.8
+    },
+    "other": {
+      "comparisons": 12,
+      "overlaps": 12,
+      "overlap_rate_pct": 100.0,
+      "mean_divergence_pct": 0.25
+    },
+    "stubble_burning": {
+      "comparisons": 15,
+      "overlaps": 15,
+      "overlap_rate_pct": 100.0,
+      "mean_divergence_pct": 0.69
+    },
+    "vehicular": {
+      "comparisons": 12,
+      "overlaps": 12,
+      "overlap_rate_pct": 100.0,
+      "mean_divergence_pct": -1.15
+    }
+  },
+  "methodology_limitations": [
+    "Receptor models (CMB/PMF) use chemical fingerprints at ground level; dispersion models (WRF-Chem) simulate 3D atmospheric chemistry.",
+    "Published studies typically report seasonal winter averages; acute short-term episodes naturally exhibit higher variability.",
+    "Horizontal trajectory fire linking detects transport corridors but does not model chemical decay, plume rise height, or wet scavenging.",
+    "Transparent reporting: Interval overlaps demonstrate scientific feasibility; divergences are expected and documented."
+  ]
+}

@@ -1,0 +1,131 @@
+:root {
+  /* ── Navy Core Palette ─────────────────────────────────── */
+  --color-primary:        #1B3A5C;    /* Navy — all CTAs, buttons, focus states */
+  --color-primary-hover:  #152E48;    /* Darker navy for hover */
+  --color-secondary-navy: #A8C0DA;    /* Accent navy — subtle highlights */
+
+  /* ── Background Surfaces ───────────────────────────────── */
+  --color-page-bg:        #F8FAFD;    /* Lightest bg — page container */
+  --color-surface:        #FFFFFF;    /* Cards, panels, table bg */
+  --color-surface-alt:    #F2F6FB;    /* Subtle alt surface (inputs, disabled) */
+
+  /* ── Typography ────────────────────────────────────────── */
+  --color-heading:        #1F2937;    /* Dark grey-black for headings */
+  --color-text-primary:   #1F2937;    /* Primary body text */
+  --color-text-secondary: #44566B;    /* Secondary text, labels */
+  --color-text-muted:     #6B7A8C;    /* Muted, disabled, hints */
+  --color-text-dim:       #7C8DA0;    /* Further diminished */
+
+  /* ── Borders ───────────────────────────────────────────── */
+  --color-border:         #E6ECF3;    /* Main borders */
+  --color-border-light:   #F2F6FB;    /* Very light borders */
+  --color-border-card:    #D8E2EE;    /* Card borders */
+
+  /* ── Status: Active / Success ──────────────────────────── */
+  --color-active-bg:      #E5F3EC;
+  --color-active-text:    #1E6B45;
+
+  /* ── Status: Warning / Near Expiry (Orange) ────────────── */
+  --color-warning-bg:     #FFF7ED;
+  --color-warning-border: #F3D7B3;
+  --color-warning-text:   #D97706;
+
+  /* ── Status: Expired / Error (Red) ─────────────────────── */
+  --color-expired-bg:     #FCE8E8;
+  --color-expired-text:   #B23A3A;
+
+  /* ── Status: Onboarding / Info (Blue tint) ─────────────── */
+  --color-onboard-bg:     #EAF1F9;
+  --color-onboard-text:   #1B3A5C;
+
+  /* ── Table ────────────────────────────────────────────── */
+  --color-th-bg:          #F2F6FB;
+  --color-th-text:        #44566B;
+  --color-row-hover:      #F8FAFD;
+
+  /* ── Buttons ──────────────────────────────────────────── */
+  --color-btn-secondary-border: #E6ECF3;
+  --color-btn-secondary-text:   #44566B;
+
+  /* ── Source Attribution Palette ───────────────────────── */
+  --color-source-stubble:  #8C5032;
+  --color-source-vehicular:#2B5278;
+  --color-source-dust:     #967848;
+  --color-source-industry: #5A6578;
+  --color-source-other:    #7B8CA3;
+
+  /* ── AQI Scale (Muted Institutional) ──────────────────── */
+  --aqi-good:             #1E6B45;
+  --aqi-satisfactory:     #3B8256;
+  --aqi-moderate:         #C27803;
+  --aqi-poor:             #D97706;
+  --aqi-very-poor:        #C53030;
+  --aqi-severe:           #8B0000;
+
+  /* ── Shadows ──────────────────────────────────────────── */
+  --shadow-xs:   0 1px 3px rgba(27, 58, 92, 0.05);
+  --shadow-sm:   0 2px 6px rgba(27, 58, 92, 0.08);
+  --shadow-md:   0 4px 12px rgba(27, 58, 92, 0.10);
+  --shadow-lg:   0 20px 60px rgba(27, 58, 92, 0.15);
+
+  /* ── Dimensions & Radii ───────────────────────────────── */
+  --font-family: 'Inter', Segoe UI, system-ui, -apple-system, sans-serif;
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-full: 20px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-page-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-alt);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-secondary-navy);
+  border-radius: var(--radius-xs);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}

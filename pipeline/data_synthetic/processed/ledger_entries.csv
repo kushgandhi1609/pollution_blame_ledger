@@ -1,0 +1,26 @@
+episode_id,source,share_low_pct,share_mid_pct,share_high_pct,baseline_mid_pct,grade,evidence_for,evidence_against,notes
+1,stubble_burning,19.5,21.6,23.7,20.0,B,46% of hours had NW winds from stubble belt,Low wind-linked fire activity (25 fires),Standard evaluation
+1,vehicular,29.8,32.4,35.1,28.0,C,Stagnant air trapping urban fleet emissions (42% of hours),None,Standard evaluation
+1,dust,9.9,11.6,13.3,15.0,C,None,Low wind speeds (1.9 m/s) and damp air (66% RH) disfavor dust resuspension,Standard evaluation
+1,industry,17.5,19.8,22.0,22.0,C,None,Normal industrial SO2 levels (6.1 ug/m3),Standard evaluation
+1,other,12.9,14.5,16.1,15.0,C,Includes secondary inorganic aerosol formation and municipal domestic combustion,None,Standard evaluation
+2,stubble_burning,28.0,31.2,34.2,20.0,A,56% of hours had NW winds from stubble belt; 76% trajectory ensemble agreement on fire transport,None,Standard evaluation
+2,vehicular,26.0,28.5,31.1,28.0,C,Stagnant air trapping urban fleet emissions (43% of hours),None,Standard evaluation
+2,dust,8.6,10.2,11.8,15.0,C,None,Low wind speeds (1.9 m/s) and damp air (68% RH) disfavor dust resuspension,Standard evaluation
+2,industry,15.3,17.3,19.4,22.0,C,None,Normal industrial SO2 levels (6.1 ug/m3),Standard evaluation
+2,other,11.3,12.7,14.2,15.0,C,Includes secondary inorganic aerosol formation and municipal domestic combustion,None,Standard evaluation
+3,stubble_burning,29.5,32.8,36.0,20.0,A,62% of hours had NW winds from stubble belt; 76% trajectory ensemble agreement on fire transport,None,Standard evaluation
+3,vehicular,22.4,24.9,27.4,28.0,C,None,None,Standard evaluation
+3,dust,9.0,10.7,12.4,15.0,C,None,Low wind speeds (2.4 m/s) and damp air (69% RH) disfavor dust resuspension,Standard evaluation
+3,industry,16.1,18.2,20.4,22.0,C,None,Normal industrial SO2 levels (6.1 ug/m3),Standard evaluation
+3,other,11.8,13.4,15.0,15.0,C,Includes secondary inorganic aerosol formation and municipal domestic combustion,None,Standard evaluation
+4,stubble_burning,27.7,30.9,34.0,20.0,A,85% of hours had NW winds from stubble belt; 90% trajectory ensemble agreement on fire transport,None,Standard evaluation
+4,vehicular,21.1,23.5,25.8,28.0,C,None,None,Standard evaluation
+4,dust,14.3,16.0,17.6,15.0,C,Coarse ratio PM10/PM2.5 elevated (2.1) under brisk wind (3.1 m/s),None,Standard evaluation
+4,industry,15.1,17.2,19.2,22.0,C,None,Normal industrial SO2 levels (5.9 ug/m3),Standard evaluation
+4,other,11.1,12.5,14.0,15.0,C,Includes secondary inorganic aerosol formation and municipal domestic combustion,None,Standard evaluation
+5,stubble_burning,27.7,30.9,33.8,20.0,A,65% of hours had NW winds from stubble belt; 67% trajectory ensemble agreement on fire transport,None,Standard evaluation
+5,vehicular,21.1,23.5,25.9,28.0,C,None,None,Standard evaluation
+5,dust,14.3,15.9,17.6,15.0,C,Coarse ratio PM10/PM2.5 elevated (2.1) under brisk wind (3.1 m/s),None,Standard evaluation
+5,industry,15.2,17.2,19.2,22.0,C,None,Normal industrial SO2 levels (6.0 ug/m3),Standard evaluation
+5,other,11.1,12.6,14.0,15.0,C,Includes secondary inorganic aerosol formation and municipal domestic combustion,None,Standard evaluation

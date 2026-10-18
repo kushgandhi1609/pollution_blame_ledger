@@ -1,0 +1,55 @@
+# Python & Environments
+.venv
+.venv/
+venv/
+ENV/
+env/
+pipeline/.venv
+pipeline/.venv/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+
+# Testing & Linters
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Node & Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Large Data Backups & Raw/Interim Scrapes (>50MB / GitHub 100MB limit)
+pipeline/data_m*_backup/
+pipeline/sample_output_SYNTHETIC/
+**/raw/
+**/interim/
+**/station_hourly_final.csv
+**/weather_grid_hourly.csv
+**/station_features.csv
+**/aq_long.csv
+**/firms_viirs.csv
+
+# Operating System & IDE
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.log

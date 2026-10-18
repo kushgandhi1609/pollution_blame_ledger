@@ -1,0 +1,25 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/pipeline/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/pipeline",
+    "${workspaceFolder}/backend",
+    "${workspaceFolder}/analysis",
+    "pipeline",
+    "backend",
+    "analysis",
+    "."
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/pipeline",
+    "${workspaceFolder}/backend",
+    "${workspaceFolder}/analysis",
+    "pipeline",
+    "backend",
+    "analysis",
+    "."
+  ],
+  "python.envFile": "${workspaceFolder}/.env",
+  "antigravityAccount.autoCaptureAccounts": true
+}

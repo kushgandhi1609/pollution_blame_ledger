@@ -1,0 +1,90 @@
+{
+  "note": "Driver features are statistically screened; evidence features are kept by design.",
+  "cv_r2_per_fold": [
+    -0.781,
+    0.172,
+    0.727,
+    0.344,
+    0.677
+  ],
+  "importance_threshold": 0.005,
+  "driver_features_selected": [
+    "ventilation_m2s",
+    "hour_cos",
+    "wind_speed_100m_ms",
+    "is_rush_pm",
+    "hour_sin",
+    "wind_speed_roll6h"
+  ],
+  "driver_features_dropped": {
+    "too_many_missing": [],
+    "constant": [],
+    "redundant": {
+      "frp_linked_median": "fires_linked_median",
+      "temp_c": "rh_pct",
+      "wind_speed_ms": "wind_speed_100m_ms"
+    },
+    "not_better_than_noise": [
+      "raw_fires_24h_pbhr",
+      "days_from_diwali",
+      "is_rush_am",
+      "pressure_hpa",
+      "blh_m",
+      "wind_u",
+      "traj_origin_sin",
+      "fire_lag_p10_h",
+      "temp_range_24h_c",
+      "cloud_pct",
+      "traj_dist_48h_km",
+      "wind_dir_sin",
+      "stagnation_flag",
+      "precip_24h_mm",
+      "precip_mm",
+      "fires_linked_p10",
+      "traj_pbhr_frac",
+      "nw_wind_flag",
+      "fire_lag_p90_h",
+      "fire_member_agree_frac",
+      "diwali_window",
+      "traj_origin_cos",
+      "fires_linked_median",
+      "pressure_change_6h",
+      "traj_mean_speed_kmh",
+      "fire_lag_p50_h",
+      "rh_pct",
+      "is_weekend",
+      "wind_v",
+      "wind_dir_cos",
+      "precip_72h_mm",
+      "is_night",
+      "fires_linked_p90"
+    ]
+  },
+  "evidence_features_by_design": {
+    "fingerprint": [
+      "delhi_fp_traffic_z",
+      "delhi_fp_traffic_rush_ratio_no2",
+      "delhi_fp_dust_ratio",
+      "delhi_fp_dust_z",
+      "delhi_fp_industrial_so2_z",
+      "delhi_fp_biomass_ratio",
+      "delhi_fp_biomass_night_rise"
+    ],
+    "local_regional": [
+      "delhi_regional_background_pm25",
+      "delhi_background_share",
+      "delhi_hotspot_count"
+    ],
+    "ncr": [
+      "frac_rising_delhi",
+      "ncr_pm25_median",
+      "ncr_n_valid",
+      "ncr_n_stations",
+      "frac_rising_ncr",
+      "ncr_minus_delhi_pm25",
+      "ncr_to_delhi_ratio",
+      "delhi_ncr_corr24h",
+      "regime"
+    ]
+  }
+}

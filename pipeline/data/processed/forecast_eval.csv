@@ -1,0 +1,7 @@
+horizon_h,method,beats_persistence,mae_ugm3,rmse_ugm3,r2_score,aqi_category_acc_pct
+24,Gradient Boosting (Ledger Engine),False,42.65,66.12,0.588,49.5
+24,Persistence Baseline (y_t+h = y_t),False,31.19,47.8,0.785,64.1
+24,Diurnal Seasonal Mean Baseline,False,81.46,100.12,0.054,31.7
+48,Gradient Boosting (Ledger Engine),False,61.25,85.22,0.311,38.4
+48,Persistence Baseline (y_t+h = y_t),False,38.03,59.67,0.662,57.7
+48,Diurnal Seasonal Mean Baseline,False,81.18,100.63,0.039,32.2

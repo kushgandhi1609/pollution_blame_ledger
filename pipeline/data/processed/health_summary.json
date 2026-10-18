@@ -1,0 +1,618 @@
+{
+  "title": "Pollution Blame Ledger - Health Impact Module",
+  "description": "Translates episodic PM2.5 exposure into acute health risks and source-attributable burdens.",
+  "episodes": [
+    {
+      "episode_id": 1,
+      "dates": "2021-10-15 to 2021-10-16",
+      "days": 2,
+      "mean_pm25_ugm3": 187.9,
+      "peak_pm25_ugm3": 211.3,
+      "excess_pm25_above_who_ugm3": 172.9,
+      "excess_pm25_above_naaqs_ugm3": 127.9,
+      "acute_relative_risks": {
+        "all_cause_mortality_rr": 1.148,
+        "all_cause_excess_risk_pct": 14.8,
+        "population_attributable_fraction_pct": 12.9,
+        "respiratory_morbidity_rr": 1.365,
+        "respiratory_excess_risk_pct": 36.5,
+        "cardiovascular_morbidity_rr": 1.274,
+        "cardiovascular_excess_risk_pct": 27.4
+      },
+      "cigarette_equivalents": {
+        "daily_cigarettes_per_person": 8.5,
+        "cumulative_cigarettes_per_person": 17.0,
+        "standard": "Berkeley Earth (22 ug/m3 over 24h = 1 cigarette)"
+      },
+      "source_breakdown": [
+        {
+          "source": "stubble_burning",
+          "share_mid_pct": 20.0,
+          "attributable_pm25_ugm3": 37.6,
+          "attributable_cigarettes_total": 3.4
+        },
+        {
+          "source": "vehicular",
+          "share_mid_pct": 26.3,
+          "attributable_pm25_ugm3": 49.4,
+          "attributable_cigarettes_total": 4.5
+        },
+        {
+          "source": "dust",
+          "share_mid_pct": 10.0,
+          "attributable_pm25_ugm3": 18.8,
+          "attributable_cigarettes_total": 1.7
+        },
+        {
+          "source": "industry",
+          "share_mid_pct": 11.9,
+          "attributable_pm25_ugm3": 22.4,
+          "attributable_cigarettes_total": 2.0
+        },
+        {
+          "source": "other",
+          "share_mid_pct": 26.8,
+          "attributable_pm25_ugm3": 50.4,
+          "attributable_cigarettes_total": 4.6
+        }
+      ],
+      "demographic_vulnerability": [
+        {
+          "group_id": "general_adult",
+          "group_name": "General Healthy Adults (18-64)",
+          "excess_respiratory_risk_pct": 36.5,
+          "excess_cardiovascular_risk_pct": 27.4,
+          "effective_cigarette_equivalents": 17.1,
+          "guidance": "Avoid prolonged outdoor strenuous exercise; wear N95 mask if outdoors during morning/evening peaks."
+        },
+        {
+          "group_id": "children",
+          "group_name": "Children & Adolescents (<15)",
+          "excess_respiratory_risk_pct": 67.3,
+          "excess_cardiovascular_risk_pct": 36.1,
+          "effective_cigarette_equivalents": 21.4,
+          "guidance": "Suspend outdoor sports and physical education; keep classroom windows shut during high-AQI hours."
+        },
+        {
+          "group_id": "elderly",
+          "group_name": "Elderly (>65)",
+          "excess_respiratory_risk_pct": 47.6,
+          "excess_cardiovascular_risk_pct": 42.1,
+          "effective_cigarette_equivalents": 17.1,
+          "guidance": "Strictly remain indoors; maintain access to prescribed cardiovascular and respiratory medications."
+        },
+        {
+          "group_id": "cardiopulmonary",
+          "group_name": "Patients with Asthma, COPD, or Heart Disease",
+          "excess_respiratory_risk_pct": 64.6,
+          "excess_cardiovascular_risk_pct": 45.5,
+          "effective_cigarette_equivalents": 17.1,
+          "guidance": "Keep quick-relief inhalers immediately on hand; monitor peak expiratory flow; consult physician if symptoms escalate."
+        },
+        {
+          "group_id": "outdoor_workers",
+          "group_name": "Outdoor Workers & Active Commuters",
+          "excess_respiratory_risk_pct": 148.3,
+          "excess_cardiovascular_risk_pct": 92.9,
+          "effective_cigarette_equivalents": 34.2,
+          "guidance": "Mandatory employer-provided fit-tested N95 respirators; rotate strenuous work away from early morning peak smog hours."
+        }
+      ]
+    },
+    {
+      "episode_id": 2,
+      "dates": "2021-10-28 to 2021-11-01",
+      "days": 5,
+      "mean_pm25_ugm3": 209.4,
+      "peak_pm25_ugm3": 264.4,
+      "excess_pm25_above_who_ugm3": 194.4,
+      "excess_pm25_above_naaqs_ugm3": 149.4,
+      "acute_relative_risks": {
+        "all_cause_mortality_rr": 1.168,
+        "all_cause_excess_risk_pct": 16.8,
+        "population_attributable_fraction_pct": 14.4,
+        "respiratory_morbidity_rr": 1.419,
+        "respiratory_excess_risk_pct": 41.9,
+        "cardiovascular_morbidity_rr": 1.313,
+        "cardiovascular_excess_risk_pct": 31.3
+      },
+      "cigarette_equivalents": {
+        "daily_cigarettes_per_person": 9.5,
+        "cumulative_cigarettes_per_person": 47.5,
+        "standard": "Berkeley Earth (22 ug/m3 over 24h = 1 cigarette)"
+      },
+      "source_breakdown": [
+        {
+          "source": "stubble_burning",
+          "share_mid_pct": 23.5,
+          "attributable_pm25_ugm3": 49.2,
+          "attributable_cigarettes_total": 11.2
+        },
+        {
+          "source": "vehicular",
+          "share_mid_pct": 24.4,
+          "attributable_pm25_ugm3": 51.1,
+          "attributable_cigarettes_total": 11.6
+        },
+        {
+          "source": "dust",
+          "share_mid_pct": 10.1,
+          "attributable_pm25_ugm3": 21.1,
+          "attributable_cigarettes_total": 4.8
+        },
+        {
+          "source": "industry",
+          "share_mid_pct": 9.8,
+          "attributable_pm25_ugm3": 20.5,
+          "attributable_cigarettes_total": 4.7
+        },
+        {
+          "source": "other",
+          "share_mid_pct": 26.8,
+          "attributable_pm25_ugm3": 56.1,
+          "attributable_cigarettes_total": 12.7
+        }
+      ],
+      "demographic_vulnerability": [
+        {
+          "group_id": "general_adult",
+          "group_name": "General Healthy Adults (18-64)",
+          "excess_respiratory_risk_pct": 41.9,
+          "excess_cardiovascular_risk_pct": 31.3,
+          "effective_cigarette_equivalents": 47.6,
+          "guidance": "Avoid prolonged outdoor strenuous exercise; wear N95 mask if outdoors during morning/evening peaks."
+        },
+        {
+          "group_id": "children",
+          "group_name": "Children & Adolescents (<15)",
+          "excess_respiratory_risk_pct": 78.1,
+          "excess_cardiovascular_risk_pct": 41.3,
+          "effective_cigarette_equivalents": 59.5,
+          "guidance": "Suspend outdoor sports and physical education; keep classroom windows shut during high-AQI hours."
+        },
+        {
+          "group_id": "elderly",
+          "group_name": "Elderly (>65)",
+          "excess_respiratory_risk_pct": 54.9,
+          "excess_cardiovascular_risk_pct": 48.4,
+          "effective_cigarette_equivalents": 47.6,
+          "guidance": "Strictly remain indoors; maintain access to prescribed cardiovascular and respiratory medications."
+        },
+        {
+          "group_id": "cardiopulmonary",
+          "group_name": "Patients with Asthma, COPD, or Heart Disease",
+          "excess_respiratory_risk_pct": 75.0,
+          "excess_cardiovascular_risk_pct": 52.5,
+          "effective_cigarette_equivalents": 47.6,
+          "guidance": "Keep quick-relief inhalers immediately on hand; monitor peak expiratory flow; consult physician if symptoms escalate."
+        },
+        {
+          "group_id": "outdoor_workers",
+          "group_name": "Outdoor Workers & Active Commuters",
+          "excess_respiratory_risk_pct": 176.6,
+          "excess_cardiovascular_risk_pct": 108.5,
+          "effective_cigarette_equivalents": 95.2,
+          "guidance": "Mandatory employer-provided fit-tested N95 respirators; rotate strenuous work away from early morning peak smog hours."
+        }
+      ]
+    },
+    {
+      "episode_id": 3,
+      "dates": "2021-11-04 to 2021-11-17",
+      "days": 14,
+      "mean_pm25_ugm3": 271.8,
+      "peak_pm25_ugm3": 359.7,
+      "excess_pm25_above_who_ugm3": 256.8,
+      "excess_pm25_above_naaqs_ugm3": 211.8,
+      "acute_relative_risks": {
+        "all_cause_mortality_rr": 1.228,
+        "all_cause_excess_risk_pct": 22.8,
+        "population_attributable_fraction_pct": 18.6,
+        "respiratory_morbidity_rr": 1.588,
+        "respiratory_excess_risk_pct": 58.8,
+        "cardiovascular_morbidity_rr": 1.433,
+        "cardiovascular_excess_risk_pct": 43.3
+      },
+      "cigarette_equivalents": {
+        "daily_cigarettes_per_person": 12.4,
+        "cumulative_cigarettes_per_person": 173.6,
+        "standard": "Berkeley Earth (22 ug/m3 over 24h = 1 cigarette)"
+      },
+      "source_breakdown": [
+        {
+          "source": "stubble_burning",
+          "share_mid_pct": 24.6,
+          "attributable_pm25_ugm3": 66.9,
+          "attributable_cigarettes_total": 42.7
+        },
+        {
+          "source": "vehicular",
+          "share_mid_pct": 24.7,
+          "attributable_pm25_ugm3": 67.1,
+          "attributable_cigarettes_total": 42.9
+        },
+        {
+          "source": "dust",
+          "share_mid_pct": 9.8,
+          "attributable_pm25_ugm3": 26.6,
+          "attributable_cigarettes_total": 17.0
+        },
+        {
+          "source": "industry",
+          "share_mid_pct": 10.9,
+          "attributable_pm25_ugm3": 29.6,
+          "attributable_cigarettes_total": 18.9
+        },
+        {
+          "source": "other",
+          "share_mid_pct": 26.9,
+          "attributable_pm25_ugm3": 73.1,
+          "attributable_cigarettes_total": 46.7
+        }
+      ],
+      "demographic_vulnerability": [
+        {
+          "group_id": "general_adult",
+          "group_name": "General Healthy Adults (18-64)",
+          "excess_respiratory_risk_pct": 58.8,
+          "excess_cardiovascular_risk_pct": 43.3,
+          "effective_cigarette_equivalents": 173.0,
+          "guidance": "Avoid prolonged outdoor strenuous exercise; wear N95 mask if outdoors during morning/evening peaks."
+        },
+        {
+          "group_id": "children",
+          "group_name": "Children & Adolescents (<15)",
+          "excess_respiratory_risk_pct": 113.8,
+          "excess_cardiovascular_risk_pct": 57.6,
+          "effective_cigarette_equivalents": 216.2,
+          "guidance": "Suspend outdoor sports and physical education; keep classroom windows shut during high-AQI hours."
+        },
+        {
+          "group_id": "elderly",
+          "group_name": "Elderly (>65)",
+          "excess_respiratory_risk_pct": 78.2,
+          "excess_cardiovascular_risk_pct": 68.4,
+          "effective_cigarette_equivalents": 173.0,
+          "guidance": "Strictly remain indoors; maintain access to prescribed cardiovascular and respiratory medications."
+        },
+        {
+          "group_id": "cardiopulmonary",
+          "group_name": "Patients with Asthma, COPD, or Heart Disease",
+          "excess_respiratory_risk_pct": 109.5,
+          "excess_cardiovascular_risk_pct": 74.6,
+          "effective_cigarette_equivalents": 173.0,
+          "guidance": "Keep quick-relief inhalers immediately on hand; monitor peak expiratory flow; consult physician if symptoms escalate."
+        },
+        {
+          "group_id": "outdoor_workers",
+          "group_name": "Outdoor Workers & Active Commuters",
+          "excess_respiratory_risk_pct": 278.9,
+          "excess_cardiovascular_risk_pct": 161.7,
+          "effective_cigarette_equivalents": 346.0,
+          "guidance": "Mandatory employer-provided fit-tested N95 respirators; rotate strenuous work away from early morning peak smog hours."
+        }
+      ]
+    },
+    {
+      "episode_id": 4,
+      "dates": "2023-10-27 to 2023-10-28",
+      "days": 2,
+      "mean_pm25_ugm3": 176.1,
+      "peak_pm25_ugm3": 181.9,
+      "excess_pm25_above_who_ugm3": 161.1,
+      "excess_pm25_above_naaqs_ugm3": 116.1,
+      "acute_relative_risks": {
+        "all_cause_mortality_rr": 1.138,
+        "all_cause_excess_risk_pct": 13.8,
+        "population_attributable_fraction_pct": 12.1,
+        "respiratory_morbidity_rr": 1.336,
+        "respiratory_excess_risk_pct": 33.6,
+        "cardiovascular_morbidity_rr": 1.253,
+        "cardiovascular_excess_risk_pct": 25.3
+      },
+      "cigarette_equivalents": {
+        "daily_cigarettes_per_person": 8.0,
+        "cumulative_cigarettes_per_person": 16.0,
+        "standard": "Berkeley Earth (22 ug/m3 over 24h = 1 cigarette)"
+      },
+      "source_breakdown": [
+        {
+          "source": "stubble_burning",
+          "share_mid_pct": 23.4,
+          "attributable_pm25_ugm3": 41.2,
+          "attributable_cigarettes_total": 3.7
+        },
+        {
+          "source": "vehicular",
+          "share_mid_pct": 26.0,
+          "attributable_pm25_ugm3": 45.8,
+          "attributable_cigarettes_total": 4.2
+        },
+        {
+          "source": "dust",
+          "share_mid_pct": 8.9,
+          "attributable_pm25_ugm3": 15.7,
+          "attributable_cigarettes_total": 1.4
+        },
+        {
+          "source": "industry",
+          "share_mid_pct": 9.3,
+          "attributable_pm25_ugm3": 16.4,
+          "attributable_cigarettes_total": 1.5
+        },
+        {
+          "source": "other",
+          "share_mid_pct": 27.3,
+          "attributable_pm25_ugm3": 48.1,
+          "attributable_cigarettes_total": 4.4
+        }
+      ],
+      "demographic_vulnerability": [
+        {
+          "group_id": "general_adult",
+          "group_name": "General Healthy Adults (18-64)",
+          "excess_respiratory_risk_pct": 33.6,
+          "excess_cardiovascular_risk_pct": 25.3,
+          "effective_cigarette_equivalents": 16.0,
+          "guidance": "Avoid prolonged outdoor strenuous exercise; wear N95 mask if outdoors during morning/evening peaks."
+        },
+        {
+          "group_id": "children",
+          "group_name": "Children & Adolescents (<15)",
+          "excess_respiratory_risk_pct": 61.6,
+          "excess_cardiovascular_risk_pct": 33.3,
+          "effective_cigarette_equivalents": 20.0,
+          "guidance": "Suspend outdoor sports and physical education; keep classroom windows shut during high-AQI hours."
+        },
+        {
+          "group_id": "elderly",
+          "group_name": "Elderly (>65)",
+          "excess_respiratory_risk_pct": 43.7,
+          "excess_cardiovascular_risk_pct": 38.7,
+          "effective_cigarette_equivalents": 16.0,
+          "guidance": "Strictly remain indoors; maintain access to prescribed cardiovascular and respiratory medications."
+        },
+        {
+          "group_id": "cardiopulmonary",
+          "group_name": "Patients with Asthma, COPD, or Heart Disease",
+          "excess_respiratory_risk_pct": 59.0,
+          "excess_cardiovascular_risk_pct": 41.9,
+          "effective_cigarette_equivalents": 16.0,
+          "guidance": "Keep quick-relief inhalers immediately on hand; monitor peak expiratory flow; consult physician if symptoms escalate."
+        },
+        {
+          "group_id": "outdoor_workers",
+          "group_name": "Outdoor Workers & Active Commuters",
+          "excess_respiratory_risk_pct": 133.9,
+          "excess_cardiovascular_risk_pct": 84.7,
+          "effective_cigarette_equivalents": 32.0,
+          "guidance": "Mandatory employer-provided fit-tested N95 respirators; rotate strenuous work away from early morning peak smog hours."
+        }
+      ]
+    },
+    {
+      "episode_id": 5,
+      "dates": "2023-11-02 to 2023-11-09",
+      "days": 8,
+      "mean_pm25_ugm3": 216.5,
+      "peak_pm25_ugm3": 275.6,
+      "excess_pm25_above_who_ugm3": 201.5,
+      "excess_pm25_above_naaqs_ugm3": 156.5,
+      "acute_relative_risks": {
+        "all_cause_mortality_rr": 1.175,
+        "all_cause_excess_risk_pct": 17.5,
+        "population_attributable_fraction_pct": 14.9,
+        "respiratory_morbidity_rr": 1.437,
+        "respiratory_excess_risk_pct": 43.7,
+        "cardiovascular_morbidity_rr": 1.326,
+        "cardiovascular_excess_risk_pct": 32.6
+      },
+      "cigarette_equivalents": {
+        "daily_cigarettes_per_person": 9.8,
+        "cumulative_cigarettes_per_person": 78.4,
+        "standard": "Berkeley Earth (22 ug/m3 over 24h = 1 cigarette)"
+      },
+      "source_breakdown": [
+        {
+          "source": "stubble_burning",
+          "share_mid_pct": 25.3,
+          "attributable_pm25_ugm3": 54.8,
+          "attributable_cigarettes_total": 19.8
+        },
+        {
+          "source": "vehicular",
+          "share_mid_pct": 24.8,
+          "attributable_pm25_ugm3": 53.7,
+          "attributable_cigarettes_total": 19.4
+        },
+        {
+          "source": "dust",
+          "share_mid_pct": 9.3,
+          "attributable_pm25_ugm3": 20.1,
+          "attributable_cigarettes_total": 7.3
+        },
+        {
+          "source": "industry",
+          "share_mid_pct": 11.1,
+          "attributable_pm25_ugm3": 24.0,
+          "attributable_cigarettes_total": 8.7
+        },
+        {
+          "source": "other",
+          "share_mid_pct": 27.6,
+          "attributable_pm25_ugm3": 59.8,
+          "attributable_cigarettes_total": 21.6
+        }
+      ],
+      "demographic_vulnerability": [
+        {
+          "group_id": "general_adult",
+          "group_name": "General Healthy Adults (18-64)",
+          "excess_respiratory_risk_pct": 43.7,
+          "excess_cardiovascular_risk_pct": 32.6,
+          "effective_cigarette_equivalents": 78.7,
+          "guidance": "Avoid prolonged outdoor strenuous exercise; wear N95 mask if outdoors during morning/evening peaks."
+        },
+        {
+          "group_id": "children",
+          "group_name": "Children & Adolescents (<15)",
+          "excess_respiratory_risk_pct": 81.9,
+          "excess_cardiovascular_risk_pct": 43.0,
+          "effective_cigarette_equivalents": 98.4,
+          "guidance": "Suspend outdoor sports and physical education; keep classroom windows shut during high-AQI hours."
+        },
+        {
+          "group_id": "elderly",
+          "group_name": "Elderly (>65)",
+          "excess_respiratory_risk_pct": 57.4,
+          "excess_cardiovascular_risk_pct": 50.5,
+          "effective_cigarette_equivalents": 78.7,
+          "guidance": "Strictly remain indoors; maintain access to prescribed cardiovascular and respiratory medications."
+        },
+        {
+          "group_id": "cardiopulmonary",
+          "group_name": "Patients with Asthma, COPD, or Heart Disease",
+          "excess_respiratory_risk_pct": 78.7,
+          "excess_cardiovascular_risk_pct": 54.8,
+          "effective_cigarette_equivalents": 78.7,
+          "guidance": "Keep quick-relief inhalers immediately on hand; monitor peak expiratory flow; consult physician if symptoms escalate."
+        },
+        {
+          "group_id": "outdoor_workers",
+          "group_name": "Outdoor Workers & Active Commuters",
+          "excess_respiratory_risk_pct": 186.7,
+          "excess_cardiovascular_risk_pct": 114.0,
+          "effective_cigarette_equivalents": 157.5,
+          "guidance": "Mandatory employer-provided fit-tested N95 respirators; rotate strenuous work away from early morning peak smog hours."
+        }
+      ]
+    },
+    {
+      "episode_id": 6,
+      "dates": "2023-11-13 to 2023-11-17",
+      "days": 5,
+      "mean_pm25_ugm3": 243.6,
+      "peak_pm25_ugm3": 274.8,
+      "excess_pm25_above_who_ugm3": 228.6,
+      "excess_pm25_above_naaqs_ugm3": 183.6,
+      "acute_relative_risks": {
+        "all_cause_mortality_rr": 1.201,
+        "all_cause_excess_risk_pct": 20.1,
+        "population_attributable_fraction_pct": 16.7,
+        "respiratory_morbidity_rr": 1.509,
+        "respiratory_excess_risk_pct": 50.9,
+        "cardiovascular_morbidity_rr": 1.377,
+        "cardiovascular_excess_risk_pct": 37.7
+      },
+      "cigarette_equivalents": {
+        "daily_cigarettes_per_person": 11.1,
+        "cumulative_cigarettes_per_person": 55.5,
+        "standard": "Berkeley Earth (22 ug/m3 over 24h = 1 cigarette)"
+      },
+      "source_breakdown": [
+        {
+          "source": "stubble_burning",
+          "share_mid_pct": 23.2,
+          "attributable_pm25_ugm3": 56.5,
+          "attributable_cigarettes_total": 12.9
+        },
+        {
+          "source": "vehicular",
+          "share_mid_pct": 26.2,
+          "attributable_pm25_ugm3": 63.8,
+          "attributable_cigarettes_total": 14.5
+        },
+        {
+          "source": "dust",
+          "share_mid_pct": 9.4,
+          "attributable_pm25_ugm3": 22.9,
+          "attributable_cigarettes_total": 5.2
+        },
+        {
+          "source": "industry",
+          "share_mid_pct": 10.0,
+          "attributable_pm25_ugm3": 24.4,
+          "attributable_cigarettes_total": 5.6
+        },
+        {
+          "source": "other",
+          "share_mid_pct": 27.2,
+          "attributable_pm25_ugm3": 66.3,
+          "attributable_cigarettes_total": 15.1
+        }
+      ],
+      "demographic_vulnerability": [
+        {
+          "group_id": "general_adult",
+          "group_name": "General Healthy Adults (18-64)",
+          "excess_respiratory_risk_pct": 50.9,
+          "excess_cardiovascular_risk_pct": 37.7,
+          "effective_cigarette_equivalents": 55.4,
+          "guidance": "Avoid prolonged outdoor strenuous exercise; wear N95 mask if outdoors during morning/evening peaks."
+        },
+        {
+          "group_id": "children",
+          "group_name": "Children & Adolescents (<15)",
+          "excess_respiratory_risk_pct": 96.9,
+          "excess_cardiovascular_risk_pct": 50.0,
+          "effective_cigarette_equivalents": 69.2,
+          "guidance": "Suspend outdoor sports and physical education; keep classroom windows shut during high-AQI hours."
+        },
+        {
+          "group_id": "elderly",
+          "group_name": "Elderly (>65)",
+          "excess_respiratory_risk_pct": 67.3,
+          "excess_cardiovascular_risk_pct": 59.1,
+          "effective_cigarette_equivalents": 55.4,
+          "guidance": "Strictly remain indoors; maintain access to prescribed cardiovascular and respiratory medications."
+        },
+        {
+          "group_id": "cardiopulmonary",
+          "group_name": "Patients with Asthma, COPD, or Heart Disease",
+          "excess_respiratory_risk_pct": 93.2,
+          "excess_cardiovascular_risk_pct": 64.2,
+          "effective_cigarette_equivalents": 55.4,
+          "guidance": "Keep quick-relief inhalers immediately on hand; monitor peak expiratory flow; consult physician if symptoms escalate."
+        },
+        {
+          "group_id": "outdoor_workers",
+          "group_name": "Outdoor Workers & Active Commuters",
+          "excess_respiratory_risk_pct": 228.8,
+          "excess_cardiovascular_risk_pct": 136.2,
+          "effective_cigarette_equivalents": 110.7,
+          "guidance": "Mandatory employer-provided fit-tested N95 respirators; rotate strenuous work away from early morning peak smog hours."
+        }
+      ]
+    }
+  ],
+  "assumptions": [
+    "Ambient outdoor monitor readings represent average city-wide population inhalation exposure (indoor filtration from HEPA filters or air conditioning attenuation is not modeled).",
+    "Log-linear concentration-response relationships from epidemiological studies are evaluated assuming monotonic risk scaling at severe episodic levels (>200 ug/m3).",
+    "Toxicity per microgram of PM2.5 is treated as uniform across sources; chemical species toxicity differences (e.g., toxic polycyclic aromatic hydrocarbons vs geological mineral dust) are not individually weighted.",
+    "Counterfactual baseline is the WHO 2021 24-hour guideline of 15 ug/m3; excess risk is evaluated strictly above this counterfactual.",
+    "Cigarette equivalence is derived from the Berkeley Earth mathematical model (1 cigarette/day ~ 22 ug/m3 PM2.5 over 24h) and is provided strictly as an illustrative communication metric.",
+    "All figures are illustrative statistical public health projections, not individualized clinical diagnoses or official mortality statistics."
+  ],
+  "citations": [
+    {
+      "source": "WHO (2021)",
+      "title": "WHO global air quality guidelines: particulate matter (PM2.5 and PM10), ozone, nitrogen dioxide, sulfur dioxide and carbon monoxide",
+      "url": "https://iris.who.int/handle/10665/345329"
+    },
+    {
+      "source": "Burnett et al. (2018)",
+      "title": "Global estimates of mortality associated with long-term exposure to ambient fine particulate matter",
+      "url": "https://doi.org/10.1073/pnas.1803222115"
+    },
+    {
+      "source": "Muller & Muller (2015)",
+      "title": "Air Pollution and Cigarette Equivalence",
+      "url": "https://berkeleyearth.org/air-pollution-and-cigarette-equivalence/"
+    },
+    {
+      "source": "Lancet Planetary Health (2020)",
+      "title": "Health and economic impact of air pollution in the states of India: the Global Burden of Disease Study 1990-2019",
+      "url": "https://doi.org/10.1016/S2542-5196(20)30298-9"
+    }
+  ]
+}
