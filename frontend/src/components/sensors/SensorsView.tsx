@@ -26,7 +26,7 @@ export const SensorsView: React.FC<SensorsViewProps> = ({
       {/* 1. Spatial Telemetry Map */}
       <Card
         title="Delhi-NCR Continuous Air Quality Monitoring Network"
-        subtitle="72 continuous ambient monitoring stations mapped across Delhi, Haryana, and UP boundaries with real-time IDW spatial consistency checks."
+        subtitle="71 continuous ambient monitoring stations mapped across Delhi, Haryana, and UP boundaries with real-time IDW spatial consistency checks."
       >
         <StationMap
           stations={stations}
@@ -36,10 +36,7 @@ export const SensorsView: React.FC<SensorsViewProps> = ({
         />
       </Card>
 
-      {/* 2. Validation Benchmark Card */}
-      <SensorBenchmarkCard validation={validation} />
-
-      {/* 3. Sensor Health Diagnostics Table */}
+      {/* 2. Sensor Health Diagnostics Table */}
       <Card
         title="Neighborhood Consistency & Residual Telemetry"
         subtitle="Stations evaluated with Inverse-Distance Weighting (k=4, 40km corridor) standardizing spatial deviations against historical variance."
