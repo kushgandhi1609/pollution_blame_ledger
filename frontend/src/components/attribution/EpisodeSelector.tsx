@@ -207,7 +207,7 @@ export const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Lead Source:</span>
                   <Badge sourceKey={ep.dominant_source} size="sm">
-                    {ep.dominant_source.replace('_', ' ')} ({Math.round(ep.dominant_share)}%)
+                    {ep.dominant_source.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + ` (${Math.round(ep.dominant_share_pct)}%)`}
                   </Badge>
                 </div>
                 <span

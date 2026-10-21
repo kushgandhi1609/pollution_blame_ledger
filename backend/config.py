@@ -1,12 +1,16 @@
 """FastAPI backend configuration and filesystem paths."""
 
 from pathlib import Path
+import os
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 PIPELINE_DIR = BASE_DIR / "pipeline"
-PROCESSED_DIR = PIPELINE_DIR / "data" / "processed"
-REFERENCE_DIR = PIPELINE_DIR / "data" / "reference"
+
+# Use BL_DATA_DIR env var if present (e.g., "data_synthetic"), otherwise default to "data"
+DATA_DIR_NAME = os.environ.get("BL_DATA_DIR", "data")
+PROCESSED_DIR = PIPELINE_DIR / DATA_DIR_NAME / "processed"
+REFERENCE_DIR = PIPELINE_DIR / DATA_DIR_NAME / "reference"
 CONFIG_DIR = BASE_DIR / "config"
 
 # CORS origins

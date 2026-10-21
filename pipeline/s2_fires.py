@@ -13,7 +13,7 @@ import time
 import pandas as pd
 import requests
 
-from config import RAW, INTERIM, FIRE_BBOX, FIRMS_SOURCES, FIRMS_CHUNK_DAYS
+from pipeline.config import RAW, INTERIM, FIRE_BBOX, FIRMS_SOURCES, FIRMS_CHUNK_DAYS
 from common import padded_periods
 
 API = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"

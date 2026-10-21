@@ -67,7 +67,7 @@ def get_episode_hotspots(
 
     items = []
     for sid, excess in top.items():
-        name = station_names.get(sid, sid)
+        name = station_names.get(str(sid), str(sid))
         items.append(f"{name} (+{excess:.1f} ug/m3 local excess)")
     return "; ".join(items)
 
@@ -86,7 +86,7 @@ def main():
 
     # Load station names mapping
     stations_ref_path = REF / "stations.csv"
-    station_names = {}
+    station_names: dict[str, str] = {}
     if stations_ref_path.exists():
         st_ref = pd.read_csv(stations_ref_path)
         station_names = dict(zip(st_ref["station_id"], st_ref["name"]))

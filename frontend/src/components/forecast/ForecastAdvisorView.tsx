@@ -38,7 +38,7 @@ export const ForecastAdvisorView: React.FC<ForecastAdvisorViewProps> = ({
       {/* 1. 72H Forecast Projection */}
       <Card
         title="Predictive Intelligence & Early Warning"
-        subtitle="Gradient boosted particulate forecasts predicting 24h, 48h, and 72h atmospheric concentrations with uncertainty boundaries."
+        subtitle="Gradient boosted particulate forecasts predicting 24h and 48h atmospheric concentrations with uncertainty boundaries."
       >
         <ForecastChart forecastPoints={forecastPoints} />
         <div style={{ marginTop: '20px' }}>

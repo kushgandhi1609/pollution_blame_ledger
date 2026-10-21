@@ -14,8 +14,12 @@ export const ForecastEvaluationTable: React.FC<ForecastEvaluationTableProps> = (
         <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-heading)', margin: 0 }}>
           Forecasting Model Accuracy Benchmark
         </h4>
-        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-          Evaluated against naive persistence (yesterday's air persists) and historical seasonal mean baselines.
+        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+          Evaluated against naive persistence (today's air persists) and historical seasonal mean baselines.
+          <br />
+          <span style={{ fontStyle: 'italic', color: 'var(--color-text-secondary)' }}>
+            Note: Persistence currently outperforms the model at both horizons. Skill on transport-driven changes has not yet been tested separately.
+          </span>
         </div>
       </div>
 
@@ -60,7 +64,6 @@ export const ForecastEvaluationTable: React.FC<ForecastEvaluationTableProps> = (
           <tbody>
             {evaluation.map((row, idx) => {
               const name = row.method || row.model_name || 'Model';
-              const isBest = name.toLowerCase().includes('gradient');
               const rmse = row.rmse_ugm3 ?? row.rmse ?? null;
               const mae = row.mae_ugm3 ?? row.mae ?? null;
               const r2 = row.r2_score ?? row.r2 ?? null;
@@ -71,10 +74,10 @@ export const ForecastEvaluationTable: React.FC<ForecastEvaluationTableProps> = (
                   key={idx}
                   style={{
                     borderBottom: '1px solid var(--color-border-light)',
-                    backgroundColor: isBest ? 'var(--color-active-bg)' : 'transparent',
+                    backgroundColor: 'transparent',
                   }}
                 >
-                  <td style={{ padding: '8px 14px', fontWeight: isBest ? 700 : 500, color: isBest ? 'var(--color-active-text)' : 'var(--color-heading)' }}>
+                  <td style={{ padding: '8px 14px', fontWeight: 500, color: 'var(--color-heading)' }}>
                     {name}
                   </td>
                   <td style={{ padding: '8px 14px', color: 'var(--color-text-secondary)' }}>
@@ -86,7 +89,7 @@ export const ForecastEvaluationTable: React.FC<ForecastEvaluationTableProps> = (
                   <td style={{ padding: '8px 14px', color: 'var(--color-text-secondary)' }}>
                     {mae !== null ? Number(mae).toFixed(1) : '—'}
                   </td>
-                  <td style={{ padding: '8px 14px', fontWeight: 700, color: isBest ? 'var(--color-active-text)' : 'var(--color-text-secondary)' }}>
+                  <td style={{ padding: '8px 14px', fontWeight: 700, color: 'var(--color-text-secondary)' }}>
                     {r2 !== null ? Number(r2).toFixed(2) : '—'}
                   </td>
                   <td style={{ padding: '8px 14px', color: 'var(--color-text-secondary)' }}>

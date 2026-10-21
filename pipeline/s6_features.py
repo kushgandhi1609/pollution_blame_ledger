@@ -11,8 +11,15 @@ Columns that use information from AFTER the row's hour are marked look-ahead in 
 import numpy as np
 import pandas as pd
 
-from config import *  # noqa: F401,F403
-from common import period_hours, wind_to_uv
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from pipeline.config import *  # noqa: F401,F403
+from pipeline.common import period_hours, wind_to_uv
 
 
 # ------------------------------------------------------------------ time features

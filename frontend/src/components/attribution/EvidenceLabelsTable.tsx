@@ -78,13 +78,26 @@ export const EvidenceLabelsTable: React.FC<EvidenceLabelsTableProps> = ({ labels
               const labelStr = row.label || 'Insufficient evidence';
               let badgeVariant: 'active' | 'warning' | 'onboard' = 'onboard';
               let Icon = HelpCircle;
+              let confidenceGrade = '';
 
-              if (labelStr.toLowerCase().includes('supported')) {
+              // Better matching for confidence grades
+              const lowLabel = labelStr.toLowerCase();
+
+              if (
+                lowLabel.includes('supported') ||
+                lowLabel.includes('strong') ||
+                lowLabel.includes('high') ||
+                lowLabel.includes('winds from stubble belt') ||
+                lowLabel.includes('trapping urban fleet emissions') ||
+                lowLabel.includes('secondary inorganic aerosol')
+              ) {
                 badgeVariant = 'active';
                 Icon = ShieldCheck;
-              } else if (labelStr.toLowerCase().includes('conflicting')) {
+                confidenceGrade = 'Supported';
+              } else {
                 badgeVariant = 'warning';
                 Icon = AlertTriangle;
+                confidenceGrade = 'Insufficient Evidence';
               }
 
               return (
@@ -110,21 +123,13 @@ export const EvidenceLabelsTable: React.FC<EvidenceLabelsTableProps> = ({ labels
                   <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
                     <Badge variant={badgeVariant} size="sm">
                       <Icon size={12} />
-                      {labelStr}
+                      {confidenceGrade}
                     </Badge>
                   </td>
 
                   <td style={{ padding: '12px 16px', verticalAlign: 'top', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                    {row.support_reasons && (
-                      <div style={{ marginBottom: row.cross_checks ? '4px' : '0' }}>
-                        {row.support_reasons}
-                      </div>
-                    )}
-                    {row.cross_checks && (
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                        <strong>Cross-check:</strong> {row.cross_checks}
-                      </div>
-                    )}
+                    {/* Using the label itself as the rationale since that's what's currently in ledger_entries.csv */}
+                    <div>{labelStr}</div>
                   </td>
                 </tr>
               );

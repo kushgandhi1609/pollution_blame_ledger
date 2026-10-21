@@ -79,6 +79,7 @@ class DataLoader:
 
     def __init__(self):
         self._cache: dict[str, Any] = {}
+        print(f"[DataLoader] Loading artifacts from: {PROCESSED_DIR}")
 
     def get_city_daily(self) -> pd.DataFrame:
         if "city_daily" not in self._cache:
@@ -142,6 +143,17 @@ class DataLoader:
         if "forecast_hourly" not in self._cache:
             p = PROCESSED_DIR / "forecast_hourly.csv"
             df = pd.read_csv(p) if p.exists() else pd.DataFrame()
+            # Merge with city_hourly_final to get actual observed values (delhi_pm25_median)
+            if not df.empty:
+                hourly = self.get_city_hourly()
+                if not hourly.empty:
+                    # Merge on target_time
+                    df = df.merge(
+                        hourly[['time', 'delhi_pm25_median']],
+                        left_on='target_time',
+                        right_on='time',
+                        how='left'
+                    ).drop(columns=['time'])
             self._cache["forecast_hourly"] = df
         return self._cache["forecast_hourly"]
 
@@ -203,7 +215,7 @@ loader = DataLoader()
 def get_episodes_list() -> list[dict[str, Any]]:
     """Returns aggregated metadata for all 6 detected pollution episodes."""
     daily = loader.get_city_daily()
-    labels = loader.get_ledger_labels()
+    entries = loader.get_ledger_entries()
 
     if daily.empty or "episode_id" not in daily.columns:
         return []
@@ -220,17 +232,41 @@ def get_episodes_list() -> list[dict[str, Any]]:
         season = str(start_date[:4])
         diwali = int(str(g["diwali_window"].max())) if "diwali_window" in g.columns else 0
 
-        # Find dominant source from ledger labels
-        ep_labels = labels[labels["episode_id"] == ep_id]
+        # Find dominant source from ledger entries (replacing labels check)
+        ep_entries = entries[entries["episode_id"] == ep_id]
         dominant_source = "unknown"
         dominant_share = 0.0
         dominant_label = "Insufficient evidence"
 
-        if not ep_labels.empty:
-            top_row = pd.DataFrame(ep_labels).sort_values(by="share_mid_pct", ascending=False).iloc[0]
+        if not ep_entries.empty:
+            top_row = ep_entries.sort_values(by="share_mid_pct", ascending=False).iloc[0]
             dominant_source = str(top_row["source"])
             dominant_share = float(str(top_row["share_mid_pct"]))
-            dominant_label = str(top_row["label"])
+
+            # Fixed logic: the "Other" category in ledger_entries.csv usually has the
+            # highest midpoint share but the lowest evidence grade (Grade C).
+            # We should look for the source with the best balance of share and evidence.
+
+            # First, try to find the highest-share source that is actually 'Supported' (Grade A or B)
+            supported_sources = ep_entries[ep_entries["grade"].isin(["A", "B"])]
+            if not supported_sources.empty:
+                best_supported = supported_sources.sort_values(by="share_mid_pct", ascending=False).iloc[0]
+                dominant_source = str(best_supported["source"])
+                dominant_share = float(str(best_supported["share_mid_pct"]))
+                grade = str(best_supported["grade"])
+            else:
+                # Fallback to the absolute dominant source if nothing is supported
+                best_overall = ep_entries.sort_values(by="share_mid_pct", ascending=False).iloc[0]
+                dominant_source = str(best_overall["source"])
+                dominant_share = float(str(best_overall["share_mid_pct"]))
+                grade = str(best_overall["grade"])
+
+            if grade == "A":
+                dominant_label = "Strongly Supported"
+            elif grade == "B":
+                dominant_label = "Supported"
+            else:
+                dominant_label = "Insufficient evidence"
 
         title = f"Episode {ep_id}: {season} Severe Smog Window"
         if diwali:
@@ -269,11 +305,11 @@ def get_episode_detail(episode_id: int) -> dict[str, Any] | None:
     if not ledger_df.empty:
         entries = df_to_records(ledger_df[ledger_df["episode_id"] == episode_id])
 
-    # Evidence labels
-    labels_df = loader.get_ledger_labels()
+    # Evidence labels - we now use the same data as entries since labels are embedded
     labels = []
-    if not labels_df.empty:
-        labels = df_to_records(labels_df[labels_df["episode_id"] == episode_id])
+    if not ledger_df.empty:
+        ep_entries = ledger_df[ledger_df["episode_id"] == episode_id]
+        labels = df_to_records(ep_entries[['episode_id', 'source', 'share_mid_pct', 'evidence_for']].rename(columns={'evidence_for': 'label'}))
 
     # Actions
     actions_df = loader.get_action_recommendations()

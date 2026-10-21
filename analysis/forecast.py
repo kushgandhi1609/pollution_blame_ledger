@@ -178,8 +178,8 @@ def main():
 
         folds = list(time_series_cv_folds(n_samples, FS_N_SPLITS, FS_GAP_HOURS))
         for train_idx, test_idx in folds:
-            X_tr, y_tr_log = X.iloc[train_idx], y_log[train_idx]
-            X_te, y_te_raw = X.iloc[test_idx], y_raw[test_idx]
+            X_tr, y_tr_log = X.iloc[train_idx.tolist()], y_log[train_idx]
+            X_te, y_te_raw = X.iloc[test_idx.tolist()], y_raw[test_idx]
 
             # Train Model
             reg = HistGradientBoostingRegressor(
@@ -189,9 +189,9 @@ def main():
             pred_raw = np.exp(reg.predict(X_te))
 
             # Diurnal baseline: mean target by hour of day from train set
-            train_hours = sub_df.iloc[train_idx]["hour"].to_numpy(dtype=int)
+            train_hours = sub_df.iloc[train_idx.tolist()]["hour"].to_numpy(dtype=int)
             hour_means = {hr: float(np.mean(y_raw[train_idx][train_hours == hr])) for hr in range(24) if np.any(train_hours == hr)}
-            test_hours = sub_df.iloc[test_idx]["hour"].to_numpy(dtype=int)
+            test_hours = sub_df.iloc[test_idx.tolist()]["hour"].to_numpy(dtype=int)
             default_val = float(np.mean(y_raw[train_idx]))
             pred_diurnal = np.array([hour_means.get(hr, default_val) for hr in test_hours])
 
@@ -240,12 +240,12 @@ def main():
         pred_lo = np.minimum(pred_lo, pred_mid)
         pred_hi = np.maximum(pred_hi, pred_mid)
 
-        for idx, row in df.iterrows():
+        for i, (_, row) in enumerate(df.iterrows()):
             issue_t = row["time"]
             target_t = issue_t + pd.Timedelta(hours=h)
-            p_val = round(float(pred_mid[idx]), 1)
-            p_lo = round(float(pred_lo[idx]), 1)
-            p_hi = round(float(pred_hi[idx]), 1)
+            p_val = round(float(pred_mid[i]), 1)
+            p_lo = round(float(pred_lo[i]), 1)
+            p_hi = round(float(pred_hi[i]), 1)
             cat = aqi_label(p_val)
 
             operational_forecasts.append(

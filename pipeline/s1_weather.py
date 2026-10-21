@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import requests
 
-from config import RAW, INTERIM, TZ, WEATHER_GRID, DELHI_LAT, DELHI_LON
+from pipeline.config import RAW, INTERIM, TZ, WEATHER_GRID, DELHI_LAT, DELHI_LON
 from common import padded_periods
 
 URL = "https://archive-api.open-meteo.com/v1/archive"
@@ -55,6 +55,8 @@ def fetch_batch(points, start, end):
             if variables == CORE:
                 raise
             print("  note: boundary_layer_height not accepted here, continuing without it:", str(e)[:120])
+    if js is None:
+        return pd.DataFrame()
     if isinstance(js, dict):
         js = [js]
     frames = []

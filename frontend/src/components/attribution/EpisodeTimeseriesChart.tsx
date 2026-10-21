@@ -38,10 +38,10 @@ export const EpisodeTimeseriesChart: React.FC<EpisodeTimeseriesChartProps> = ({
 
     return {
       time: dateStr,
-      pm25: pt.delhi_pm25_hourly_mean !== undefined ? Math.round(pt.delhi_pm25_hourly_mean) : null,
-      wind_speed: pt.wind_speed_m_s !== undefined ? Number(pt.wind_speed_m_s.toFixed(1)) : null,
+      pm25: pt.delhi_pm25_median !== undefined ? Math.round(pt.delhi_pm25_median) : null,
+      wind_speed: pt.wind_speed_ms !== undefined ? Number(pt.wind_speed_ms.toFixed(1)) : null,
       fires: pt.fires_linked_median || 0,
-      stagnation: pt.stagnation_day === 1 ? 1 : 0,
+      stagnation: pt.stagnation_flag === 1 ? 1 : 0,
     };
   });
 

@@ -10,15 +10,38 @@ Fire linking is only computed in FIRE_SEASON_MONTHS.
 Outputs: data/interim/traj_features_hourly.csv, data/interim/traj_central_tracks.csv
 Known limits: no vertical mixing, deposition or chemistry; wind from a 1-degree reanalysis grid.
 """
+import sys
 import time as _time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy.ndimage import map_coordinates
-from scipy.spatial import cKDTree
+from scipy.ndimage import map_coordinates # type: ignore
+from scipy.spatial import KDTree # type: ignore
 
-from config import *  # noqa: F401,F403
-from common import period_hours, wind_to_uv, bearing_deg, haversine_km
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from pipeline.common import bearing_deg, haversine_km, period_hours, wind_to_uv
+from pipeline.config import (
+    CORRIDOR_KM,
+    DELHI_LAT,
+    DELHI_LON,
+    FIRE_MIN_LINK,
+    FIRE_SEASON_MONTHS,
+    FIRE_TIME_WINDOW_H,
+    INTERIM,
+    PBHR_BOX,
+    PBHR_EXCLUDE_KM_FROM_DELHI,
+    RAW,
+    RNG_SEED,
+    TRAJ_DIR_SD_DEG,
+    TRAJ_HOURS_BACK,
+    TRAJ_N_MEMBERS,
+    TRAJ_SPEED_SD_FRAC,
+    TRAJ_WIND_LEVEL,
+)
 
 KM_PER_DEG_LAT = 110.57
 LAT0 = 29.5
@@ -28,25 +51,26 @@ KM_PER_DEG_LON = 111.32 * np.cos(np.deg2rad(LAT0))
 def load_wind():
     df = pd.read_csv(RAW / "weather_grid_hourly.csv", parse_dates=["time"])
     sp_col, di_col = f"wind_speed_{TRAJ_WIND_LEVEL}", f"wind_direction_{TRAJ_WIND_LEVEL}"
-    times = np.sort(df["time"].unique())
-    lats = np.sort(df["lat"].unique())
-    lons = np.sort(df["lon"].unique())
-    u, v = wind_to_uv(df[sp_col].values, df[di_col].values)
+    times = np.sort(np.asarray(df["time"].unique()))
+    lats = np.sort(np.asarray(df["lat"].unique(), dtype=float))
+    lons = np.sort(np.asarray(df["lon"].unique(), dtype=float))
+    u, v = wind_to_uv(np.asarray(df[sp_col], dtype=float), np.asarray(df[di_col], dtype=float))
     df = df.assign(u=u, v=v)
-    ti = pd.Index(times).get_indexer(df["time"])
-    yi = np.searchsorted(lats, df["lat"].values)
-    xi = np.searchsorted(lons, df["lon"].values)
+    ti = pd.Index(times).get_indexer(pd.Index(df["time"]))
+    yi = np.searchsorted(lats, np.asarray(df["lat"], dtype=float))
+    xi = np.searchsorted(lons, np.asarray(df["lon"], dtype=float))
     U = np.full((len(times), len(lats), len(lons)), np.nan, dtype="float32")
     V = U.copy()
-    U[ti, yi, xi] = df["u"].values
-    V[ti, yi, xi] = df["v"].values
+    U[ti, yi, xi] = np.asarray(df["u"], dtype="float32")
+    V[ti, yi, xi] = np.asarray(df["v"], dtype="float32")
     # fill gaps: along time, then zero
     for A in (U, V):
         for iy in range(A.shape[1]):
             for ix in range(A.shape[2]):
-                s = pd.Series(A[:, iy, ix]).interpolate(limit_direction="both")
-                A[:, iy, ix] = s.fillna(0).values
-    return pd.DatetimeIndex(times), lats, lons, U, V
+                s = pd.Series(list(A[:, iy, ix])).interpolate(limit_direction="both")
+                A[:, iy, ix] = np.asarray(s.fillna(0), dtype="float32")
+    dt_times: list[pd.Timestamp] = [pd.Timestamp(t) for t in times]
+    return pd.DatetimeIndex(dt_times), lats, lons, U, V
 
 
 def run_trajectories(times, lats, lons, U, V, start_idx, rng):
@@ -88,19 +112,20 @@ def main():
     t0 = _time.time()
     rng = np.random.default_rng(RNG_SEED)
     times, lats, lons, U, V = load_wind()
-    hours = period_hours()
-    start_idx = times.get_indexer(hours["time"])
+    hours_df: pd.DataFrame = period_hours()
+    start_idx = pd.Index(times).get_indexer(pd.Index(hours_df["time"]))
     ok = start_idx >= 0
     if not ok.all():
         print(f"warning: {(~ok).sum()} study hours missing from weather data; they get NaN trajectory features")
-    hours = hours[ok].reset_index(drop=True)
+    hours = pd.DataFrame(hours_df[ok].reset_index(drop=True))
+    hours_time = pd.to_datetime(hours["time"])
     start_idx = start_idx[ok]
     print(f"trajectories: {len(hours):,} start hours x {TRAJ_N_MEMBERS} members x {TRAJ_HOURS_BACK} h")
     tr_lat, tr_lon = run_trajectories(times, lats, lons, U, V, start_idx, rng)   # (K+1, n, m)
     K1, n, m = tr_lat.shape
 
     # ------------------------------------------------------------- trajectory descriptors
-    out = pd.DataFrame({"time": hours["time"].values})
+    out = pd.DataFrame({"time": hours_time})
     d_all = haversine_km(tr_lat[:-1], tr_lon[:-1], tr_lat[1:], tr_lon[1:])      # km per hour
     out["traj_mean_speed_kmh"] = np.median(d_all.mean(axis=0), axis=1)
     k48 = min(48, K1 - 1)
@@ -117,27 +142,27 @@ def main():
     # central track for the map (member 0, every 3 hours)
     ks = np.arange(0, K1, 3)
     tracks = pd.DataFrame({
-        "time": np.repeat(hours["time"].values, len(ks)),
+        "time": np.repeat(hours_time.to_numpy(), len(ks)),
         "hours_back": np.tile(ks, n),
         "lat": tr_lat[ks, :, 0].T.ravel(), "lon": tr_lon[ks, :, 0].T.ravel()})
     tracks.to_csv(INTERIM / "traj_central_tracks.csv", index=False)
 
     # ------------------------------------------------------------- fire linking
     fires = pd.read_csv(INTERIM / "fires_clean.csv", parse_dates=["time_ist"])
-    fx_, fy_ = to_km(fires["lat"].values, fires["lon"].values)
+    fx_, fy_ = to_km(np.asarray(fires["lat"], dtype=float), np.asarray(fires["lon"], dtype=float))
     t_ref = pd.Timestamp("2000-01-01")
-    ft = (fires["time_ist"] - t_ref).dt.total_seconds().values / 3600.0
+    ft = (pd.to_datetime(fires["time_ist"]) - t_ref).dt.total_seconds().to_numpy() / 3600.0
     tscale = CORRIDOR_KM / FIRE_TIME_WINDOW_H
-    tree = cKDTree(np.c_[fx_, fy_, ft * tscale])
-    frp = fires["frp"].fillna(0).values
+    tree = KDTree(np.c_[fx_, fy_, ft * tscale])
+    frp = np.asarray(fires["frp"].fillna(0), dtype=float)
 
     cols = ["fires_linked_median", "fires_linked_p10", "fires_linked_p90", "frp_linked_median",
             "fire_lag_p10_h", "fire_lag_p50_h", "fire_lag_p90_h", "fire_member_agree_frac"]
     res = np.full((n, len(cols)), np.nan)
-    season = hours["time"].dt.month.isin(FIRE_SEASON_MONTHS).values
+    season = hours_time.dt.month.isin(FIRE_SEASON_MONTHS).to_numpy()
     out["fire_link_computed"] = season.astype(int)
     px, py = to_km(tr_lat, tr_lon)                                         # (K1, n, m)
-    pt = ((hours["time"].values - np.datetime64(t_ref)) / np.timedelta64(1, "h")).astype(float)
+    pt = ((hours_time.to_numpy().astype("datetime64[s]") - np.datetime64("2000-01-01T00:00:00")) / np.timedelta64(1, "h")).astype(float)
     ks_all = np.arange(K1)
     for i in np.flatnonzero(season):
         tt = (pt[i] - ks_all) * tscale                                      # (K1,)
@@ -154,7 +179,7 @@ def main():
             if first:
                 ids = np.fromiter(first.keys(), dtype=int)
                 lags = np.fromiter(first.values(), dtype=float)
-                counts.append(len(ids)); frps.append(frp[ids].sum())
+                counts.append(len(ids)); frps.append(float(frp[ids].sum()))
                 l10.append(np.percentile(lags, 10)); l50.append(np.median(lags)); l90.append(np.percentile(lags, 90))
             else:
                 counts.append(0); frps.append(0.0); l10.append(np.nan); l50.append(np.nan); l90.append(np.nan)
@@ -167,17 +192,18 @@ def main():
         if i % 500 == 0:
             print(f"  linked {i}/{n} start hours ({_time.time() - t0:.0f}s)")
     for c_i, c_n in enumerate(cols):
-        out[c_n] = res[:, c_i]
+        out[c_n] = res[:, c_i].tolist()
     out.loc[~season, ["fires_linked_median", "fires_linked_p10", "fires_linked_p90", "frp_linked_median"]] = 0.0
 
     # ------------------------------------------------------------- naive baseline: raw fire count
     box = fires[(fires.lat.between(PBHR_BOX["lat_min"], PBHR_BOX["lat_max"])) &
                 (fires.lon.between(PBHR_BOX["lon_min"], PBHR_BOX["lon_max"]))]
-    hourly_dict = dict(box.groupby(box["time_ist"].dt.floor("h"))["time_ist"].count())
+    time_floor = [pd.Timestamp(t).floor("h") for t in box["time_ist"]]
+    hourly_counts = box.groupby(time_floor)["time_ist"].count()
     full_idx = pd.date_range(times.min(), times.max(), freq="h")
-    full_counts = [float(hourly_dict.get(t, 0.0)) for t in full_idx]
-    full_series = pd.Series(full_counts, index=full_idx)
-    roll_sum = full_series.rolling(24, min_periods=1).sum().to_dict()
+    full_series = hourly_counts.reindex(full_idx, fill_value=0).astype(float)
+    roll_sum_series = full_series.rolling(24, min_periods=1).sum()
+    roll_sum = dict(zip(full_idx, np.asarray(roll_sum_series, dtype=float)))
     out["raw_fires_24h_pbhr"] = [float(roll_sum.get(pd.Timestamp(t), 0.0)) for t in out["time"]]
     out.to_csv(INTERIM / "traj_features_hourly.csv", index=False)
     print(f"trajectories done in {_time.time() - t0:.0f}s -> {INTERIM / 'traj_features_hourly.csv'}")

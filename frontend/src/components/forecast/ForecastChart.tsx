@@ -23,11 +23,17 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ forecastPoints }) 
     ? forecastPoints.filter((p) => p.horizon_h === horizonFilter)
     : forecastPoints;
 
+  // Sort ascending by target_time to fix backwards x-axis
+  const sorted = [...filtered].sort((a, b) =>
+    new Date(a.target_time).getTime() - new Date(b.target_time).getTime()
+  );
+
   // Format data
-  const data = filtered.map((pt) => {
+  const data = sorted.map((pt) => {
     const d = new Date(pt.target_time);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const timeStr = !isNaN(d.getTime())
-      ? `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:00`
+      ? `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}, ${String(d.getHours()).padStart(2, '0')}:00`
       : pt.target_time;
 
     return {
@@ -35,6 +41,7 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ forecastPoints }) 
       pred: Math.round(pt.pm25_pred),
       low: Math.round(pt.pm25_low),
       high: Math.round(pt.pm25_high),
+      observed: pt.delhi_pm25_median !== undefined ? Math.round(pt.delhi_pm25_median) : null,
       category: pt.aqi_category,
     };
   });
@@ -52,10 +59,13 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ forecastPoints }) 
       >
         <div>
           <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-heading)', margin: 0 }}>
-            72-Hour PM2.5 Projection with 80% Credible Ribbons
+            24-48 Hour PM2.5 Projection with 80% Prediction Interval
           </h4>
           <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px', marginBottom: 0 }}>
-            Gradient boosted ensemble model incorporating diurnal boundary layer collapse, upstream fire radiative power, and transport parcel trajectory lags.
+            Gradient boosted model incorporating diurnal boundary layer collapse, upstream fire radiative power, and transport parcel trajectory lags (24h and 48h).
+          </p>
+          <p style={{ fontSize: '11px', color: 'var(--color-warning-text)', marginTop: '4px', fontStyle: 'italic' }}>
+            Note: This demo replays the model on our stored dataset. A live version requires real-time weather forecasts, which is noted as a limitation in the documentation.
           </p>
         </div>
 
@@ -107,20 +117,20 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ forecastPoints }) 
 
       <div style={{ height: '320px', width: '100%' }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
             <XAxis
               dataKey="time"
               tick={{ fontSize: 10, fill: 'var(--color-text-secondary)' }}
-              interval="preserveStartEnd"
+              interval={Math.ceil(data.length / 10)}
               angle={-25}
               textAnchor="end"
-              height={45}
+              height={60}
             />
             <YAxis
               tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }}
               domain={[0, 'auto']}
-              unit=" µg"
+              unit=" µg/m³"
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -178,6 +188,15 @@ export const ForecastChart: React.FC<ForecastChartProps> = ({ forecastPoints }) 
               strokeWidth={2.5}
               dot={{ r: 2 }}
               name="Forecast Midpoint"
+            />
+            {/* Observed Ground Truth Line */}
+            <Line
+              type="monotone"
+              dataKey="observed"
+              stroke="#000000"
+              strokeWidth={2}
+              dot={false}
+              name="Observed PM2.5"
             />
           </AreaChart>
         </ResponsiveContainer>

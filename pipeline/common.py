@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from config import PERIODS, LOOKBACK_PAD_DAYS, SYNTHETIC
+from pipeline.config import PERIODS, LOOKBACK_PAD_DAYS, SYNTHETIC
 
 
 def period_hours() -> pd.DataFrame:

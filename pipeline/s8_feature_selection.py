@@ -21,7 +21,22 @@ from sklearn.inspection import permutation_importance
 from sklearn.metrics import r2_score
 from sklearn.model_selection import TimeSeriesSplit
 
-from config import PROCESSED, FS_MAX_MISSING, FS_CORR_THRESHOLD, FS_N_SPLITS, FS_GAP_HOURS, FS_MIN_IMPORTANCE, RNG_SEED
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from pipeline.config import (
+    FS_CORR_THRESHOLD,
+    FS_GAP_HOURS,
+    FS_MAX_MISSING,
+    FS_MIN_IMPORTANCE,
+    FS_N_SPLITS,
+    PROCESSED,
+    RNG_SEED,
+)
 
 DRIVER_GROUPS = {"weather", "time", "trajectory", "fire"}
 EVIDENCE_GROUPS = {"fingerprint", "local_regional", "ncr", "ratio"}

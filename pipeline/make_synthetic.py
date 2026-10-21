@@ -8,8 +8,8 @@ Run:  BL_DATA_DIR=data_synthetic BL_SYNTHETIC=1 BL_PERIODS="2022-10-01:2022-12-1
 import numpy as np
 import pandas as pd
 
-from config import *  # noqa: F401,F403
-from common import padded_periods, period_hours
+from pipeline.config import *  # noqa: F401,F403
+from pipeline.common import padded_periods, period_hours
 
 rng = np.random.default_rng(7)
 
@@ -41,9 +41,9 @@ def make_weather():
         temp = 27 - 0.2 * doy + 6 * np.cos(2 * np.pi * (hr - 15) / 24) + rng.normal(0, 0.6, n)
         rh = np.clip(88 - 2.2 * (temp - 10) + rng.normal(0, 4, n), 15, 100)
         rain = np.zeros(n)
-        for s in rng.choice(n - 4, size=max(2, n // 400), replace=False):
+        for s in rng.choice(max(0, n - 4), size=max(0, min(2, n // 400)), replace=False):
             rain[s:s + 3] = rng.uniform(0.5, 4, 3)
-        pres = 1002 + 0.05 * doy + 2.5 * ar1(n, 0.99, rng)
+        pres = 1002.0 + (0.05 * doy + 2.5 * ar1(n, 0.99, rng)) # type: ignore
         cloud = np.clip(25 + 25 * ar1(n, 0.95, rng), 0, 100)
         blh = np.clip((120 + 1200 * np.clip(np.sin(np.pi * (hr - 7) / 10), 0, None)) *
                       (1.0 - 0.003 * doy) * (0.75 + 0.12 * spd) + rng.normal(0, 40, n), 60, 2500)
@@ -83,10 +83,11 @@ def make_fires():
                 lon = np.array([centres[i][1] for i in c]) + rng.normal(0, 0.45, nd)
                 afternoon = rng.random(nd) < 0.85
                 local_min = np.where(afternoon, 13 * 60 + 30 + rng.normal(0, 40, nd), 90 + rng.normal(0, 30, nd))
-                ts = d + pd.to_timedelta(local_min, unit="m") - pd.Timedelta(hours=5, minutes=30)
+                ts = d + pd.to_timedelta(local_min, unit="m") - pd.Timedelta(hours=5, minutes=30) # type: ignore
+                ts_idx = pd.DatetimeIndex(ts)
                 rows.append(pd.DataFrame({
                     "latitude": lat, "longitude": lon, "bright_ti4": rng.uniform(320, 367, nd), "scan": 0.4,
-                    "track": 0.4, "acq_date": ts.strftime("%Y-%m-%d"), "acq_time": ts.strftime("%H%M").astype(int),
+                    "track": 0.4, "acq_date": ts_idx.strftime("%Y-%m-%d"), "acq_time": ts_idx.strftime("%H%M").astype(int),
                     "satellite": "N", "instrument": "VIIRS", "confidence": rng.choice(["n", "h", "l"], nd, p=[.6, .3, .1]),
                     "version": "2.0NRT", "bright_ti5": rng.uniform(290, 305, nd),
                     "frp": np.round(rng.lognormal(1.5, 0.8, nd), 2),
@@ -136,12 +137,12 @@ def make_air(base_by_period, fires):
         # scale events
         delhi_mult = np.ones(n)
         ncr_mult = np.ones(n)
-        for s in rng.choice(n - 24, size=3, replace=False):
+        for s in rng.choice(max(0, n - 24), size=min(3, max(0, n - 24)), replace=False):
             delhi_mult[s:s + 18] = 2.4
-        s = rng.integers(0, n - 24)
-        ncr_mult[s:s + 18] = 2.2
+        s_ncr = rng.integers(0, max(1, n - 24))
+        ncr_mult[s_ncr:s_ncr + 18] = 2.2
         so2_burst = np.zeros(n)
-        for s in rng.choice(n - 10, size=6, replace=False):
+        for s in rng.choice(max(0, n - 10), size=min(6, max(0, n - 10)), replace=False):
             so2_burst[s:s + 6] = rng.uniform(15, 40)
         for _, srow in stations.iterrows():
             is_delhi = srow.region == "Delhi"
@@ -169,7 +170,7 @@ def make_air(base_by_period, fires):
             if srow.station_id == "SYN07":                       # a flat-lined PM2.5 sensor block
                 s = rng.integers(50, n - 60)
                 pm25[s:s + 20] = pm25[s]
-            for s in rng.choice(n - 2, size=3, replace=False):   # isolated spikes
+            for s in rng.choice(max(0, n - 2), size=min(3, max(0, n - 2)), replace=False):   # isolated spikes
                 if rng.random() < 0.7:
                     pm25[s] = max(300, pm25[max(s - 1, 0)] * 6)
             for par, v in data.items():

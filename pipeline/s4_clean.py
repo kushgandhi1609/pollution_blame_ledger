@@ -9,7 +9,7 @@ isolated single-hour spikes, PM2.5 > PM10 inconsistency flag, minimum station co
 import numpy as np
 import pandas as pd
 
-from config import RAW, REF, INTERIM, PROCESSED, POLLUTANTS, QC_BOUNDS, FLATLINE_HOURS, \
+from pipeline.config import RAW, REF, INTERIM, PROCESSED, POLLUTANTS, QC_BOUNDS, FLATLINE_HOURS, \
     SPIKE_FACTOR, SPIKE_MIN_VALUE, MIN_STATION_COMPLETENESS
 from common import period_hours
 
@@ -32,7 +32,8 @@ def factor(par, unit):
     if u == "ppb":
         return CO_PPM_TO_MG / 1000 if par == "co" else PPB_TO_UG.get(par)
     if u == "ppm":
-        return CO_PPM_TO_MG if par == "co" else (PPB_TO_UG.get(par) * 1000 if par in PPB_TO_UG else None)
+        val = PPB_TO_UG.get(par)
+        return CO_PPM_TO_MG if par == "co" else (val * 1000 if val is not None else None)
     return None
 
 
@@ -75,8 +76,7 @@ def main():
     aq = aq[aq.parameter.isin(POLLUTANTS) & aq.station_id.isin(stations.station_id)].copy()
 
     # unit conversion
-    fac = [factor(p, u) for p, u in zip(aq.parameter, aq.unit)]
-    aq["factor"] = fac
+    aq["factor"] = pd.Series([factor(p, u) for p, u in zip(aq.parameter, aq.unit)], index=aq.index)
     n_unknown = aq["factor"].isna().sum()
     if n_unknown:
         print(f"warning: dropping {n_unknown:,} rows with unknown unit: {aq.loc[aq.factor.isna(), 'unit'].unique()[:5]}")

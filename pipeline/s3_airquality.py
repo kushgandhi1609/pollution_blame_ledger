@@ -17,7 +17,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from config import RAW, REF, PERIODS, POLLUTANTS, INTERIM
+from pipeline.config import RAW, REF, PERIODS, POLLUTANTS, INTERIM
 
 BASE = "https://api.openaq.org/v3"
 

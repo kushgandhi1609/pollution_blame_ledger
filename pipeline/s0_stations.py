@@ -13,7 +13,7 @@ import time
 import pandas as pd
 import requests
 
-from config import REF, STATION_BBOX, NCR_NAME_KEYWORDS, POLLUTANTS
+from pipeline.config import REF, STATION_BBOX, NCR_NAME_KEYWORDS, POLLUTANTS
 
 BASE = "https://api.openaq.org/v3"
 
