@@ -1,26 +1,31 @@
 """
-sensor_health.py - spatial neighborhood quality and consistency monitor for monitoring stations.
+sensor_health.py - spatial neighbourhood consistency check for monitoring stations.
 
 HOW IT WORKS:
-1. Inverse-Distance Weighting (IDW): For each station and hour, predicts expected PM2.5
-   from its nearest k=4 valid neighboring stations (within 35 km).
-2. Spatial Residual & Historical Z-Score: Computes residual = observed - expected,
-   and standardizes relative to that station's own historical residual spread.
-3. Persistence Counter: Flags anomalies that persist for >= 6 consecutive hours
-   (transient single-hour spikes are not penalized).
-4. Pattern Correlation: Evaluates 24-hour rolling Pearson correlation with the neighborhood median.
-5. Cross-Pollutant Consistency: Checks if PM10, NO2, and CO behave normally while PM2.5 drifts.
+1. Inverse-Distance Weighting (IDW): for each station and hour, predicts the expected PM2.5
+   from its nearest k valid neighbouring stations (within NEIGHBOUR_MAX_KM).
+2. Spatial residual and z-score: residual = observed - expected, standardised against that
+   station's own historical residual mean and spread.
+3. Persistence counter: counts consecutive hours with |z| >= SENSOR_Z_FLAG
+   (a single odd hour is not enough).
+4. Pattern correlation: 24-hour rolling Pearson correlation with the all-station median.
+5. Cross-pollutant check: PM2.5 should not be implausibly higher than PM10.
 6. Status:
-   - 'OK'      : Tracks consistently with spatial neighborhood.
-   - 'watch'   : Moderate residual or transient anomaly under observation.
-   - 'suspect' : Persistent multi-hour deviation (|z| >= 3.0 for >= 6h) with low neighbor correlation.
-   * Note: The label 'suspect' is strictly used, never 'faulty'. Raw data is never modified.
-7. Validation: Injects synthetic drifts and drops into untouched copies of healthy stations
-   to compute and report quantitative Detection Rate and False-Alarm Rate.
+   - 'OK'         : tracks consistently with its neighbourhood.
+   - 'watch'      : moderate or short-lived deviation.
+   - 'suspect'    : persistent deviation (>= SENSOR_MIN_PERSIST_H hours) with either low
+                    correlation or a very large average deviation.
+   - 'unassessed' : no valid neighbours or no recent data, so no judgement is made.
+   The word 'suspect' is used on purpose: the check can never prove a fault.
+   Raw readings are never changed.
+7. Validation: injects synthetic faults into copies of healthy stations and reports the
+   detection rate and the false-alarm rate on untouched stations.
 
 Outputs:
   - pipeline/data/processed/sensor_health.csv
   - pipeline/data/processed/sensor_validation_report.json
+
+Run from the pipeline folder:  python ../analysis/sensor_health.py
 """
 import json
 import sys
@@ -30,307 +35,320 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from numpy.typing import ArrayLike, NDArray
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-pipeline_dir = Path(__file__).resolve().parents[1] / "pipeline"
-if str(pipeline_dir) not in sys.path:
-    sys.path.insert(0, str(pipeline_dir))
+PIPELINE_DIR = Path(__file__).resolve().parents[1] / "pipeline"
+if str(PIPELINE_DIR) not in sys.path:
+    sys.path.insert(0, str(PIPELINE_DIR))
 
-try:
-    from pipeline.common import tag_synthetic
-    from pipeline.config import (
-        PROCESSED,
-        REF,
-        SENSOR_CORR_MIN,
-        SENSOR_K_NEIGHBOURS,
-        SENSOR_MIN_PERSIST_H,
-        SENSOR_Z_FLAG,
-    )
-except (ImportError, ModuleNotFoundError):
-    from common import tag_synthetic  # type: ignore
+import config as _cfg  # type: ignore  # noqa: E402
+from common import tag_synthetic  # type: ignore  # noqa: E402
+from config import PROCESSED, REF  # type: ignore  # noqa: E402
 
-    from config import (  # type: ignore
-        PROCESSED,
-        REF,
-        SENSOR_CORR_MIN,
-        SENSOR_K_NEIGHBOURS,
-        SENSOR_MIN_PERSIST_H,
-        SENSOR_Z_FLAG,
-    )
+# Settings: read from pipeline/config.py if present, otherwise use these defaults.
+SENSOR_K_NEIGHBOURS: int = int(getattr(_cfg, "SENSOR_K_NEIGHBOURS", 4))
+SENSOR_Z_FLAG: float = float(getattr(_cfg, "SENSOR_Z_FLAG", 3.0))
+SENSOR_MIN_PERSIST_H: int = int(getattr(_cfg, "SENSOR_MIN_PERSIST_H", 6))
+SENSOR_CORR_MIN: float = float(getattr(_cfg, "SENSOR_CORR_MIN", 0.5))
+
+NEIGHBOUR_MAX_KM = 40.0      # neighbours must be within this distance
+NEIGHBOUR_MIN_KM = 0.05      # ignore duplicates / the station itself
+RECENT_HOURS = 72            # window used for the station summary
+WATCH_PERSIST_H = 3          # persistence that triggers 'watch'
+WATCH_Z = 2.0                # average |z| that triggers 'watch'
+WATCH_CORR = 0.4             # correlation below this triggers 'watch'
 
 
-def safe_nanmean(arr: np.ndarray) -> float:
-    """Computes mean over non-nan values without triggering empty slice warnings."""
+def safe_nanmean(values: ArrayLike) -> float:
+    """Mean over non-NaN values; NaN if there are none (no warnings)."""
+    arr = np.asarray(values, dtype=float)
     mask = ~np.isnan(arr)
-    return float(np.mean(arr[mask])) if np.any(mask) else np.nan
+    return float(np.mean(arr[mask])) if bool(np.any(mask)) else float("nan")
 
 
-def safe_nanmax(arr: np.ndarray, default: float = 0.0) -> float:
-    """Computes max over non-nan values without triggering empty slice warnings."""
+def safe_nanmax(values: ArrayLike, default: float = 0.0) -> float:
+    """Max over non-NaN values; `default` if there are none (no warnings)."""
+    arr = np.asarray(values, dtype=float)
     mask = ~np.isnan(arr)
-    return float(np.max(arr[mask])) if np.any(mask) else default
+    return float(np.max(arr[mask])) if bool(np.any(mask)) else default
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    R = 6371.0
+    r_earth = 6371.0
     phi1, phi2 = np.radians(lat1), np.radians(lat2)
     dphi = np.radians(lat2 - lat1)
     dlambda = np.radians(lon2 - lon1)
     a = np.sin(dphi / 2.0) ** 2 + np.cos(phi1) * np.cos(phi2) * np.sin(dlambda / 2.0) ** 2
-    return 2.0 * R * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
+    return float(2.0 * r_earth * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a)))
 
 
 def compute_distance_matrix(stations_df: pd.DataFrame) -> tuple[np.ndarray, list[str]]:
-    station_ids = stations_df["station_id"].tolist()
+    station_ids = [str(s) for s in stations_df["station_id"].tolist()]
     n = len(station_ids)
     dist = np.zeros((n, n), dtype=float)
     coords = stations_df[["lat", "lon"]].to_numpy(dtype=float)
     for i in range(n):
-        for j in range(n):
-            if i == j:
-                dist[i, j] = 0.0
-            else:
-                dist[i, j] = haversine_km(float(coords[i, 0]), float(coords[i, 1]), float(coords[j, 0]), float(coords[j, 1]))
+        for j in range(i + 1, n):
+            d = haversine_km(float(coords[i, 0]), float(coords[i, 1]),
+                             float(coords[j, 0]), float(coords[j, 1]))
+            dist[i, j] = d
+            dist[j, i] = d
     return dist, station_ids
+
+
+def rolling_corr_np(x: np.ndarray, y: np.ndarray, window: int, min_periods: int) -> np.ndarray:
+    """Rolling Pearson correlation using only hours where both values exist."""
+    n = len(x)
+    out = np.full(n, np.nan)
+    for t in range(n):
+        lo = max(0, t - window + 1)
+        xs, ys = x[lo : t + 1], y[lo : t + 1]
+        ok = ~(np.isnan(xs) | np.isnan(ys))
+        if ok.sum() < min_periods:
+            continue
+        xs, ys = xs[ok], ys[ok]
+        if np.std(xs) == 0 or np.std(ys) == 0:
+            continue
+        out[t] = float(np.corrcoef(xs, ys)[0, 1])
+    return out
 
 
 def run_sensor_check(
     hourly_df: pd.DataFrame, stations_df: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    # Pivot PM2.5 matrix: time x station_id
+    # PM2.5 and PM10 matrices: time x station_id
     pm25_mat = hourly_df.pivot(index="time", columns="station_id", values="pm25")
     pm10_mat = hourly_df.pivot(index="time", columns="station_id", values="pm10")
 
     dist_mat, station_ids = compute_distance_matrix(stations_df)
     st_idx = {sid: i for i, sid in enumerate(station_ids)}
 
-    # Filter to stations present in pm25_mat
+    # Keep only stations that are in both the station list and the hourly data
     common_stations = [s for s in station_ids if s in pm25_mat.columns]
     pm25_mat = pm25_mat[common_stations]
-    
+    pm25_vals: NDArray[np.float64] = np.asarray(pm25_mat.to_numpy(dtype=float), dtype=np.float64)  # (n_times, n_stations)
+
     times = pm25_mat.index
     n_times = len(times)
     n_stations = len(common_stations)
+    common_idx = [st_idx[s] for s in common_stations]
 
     expected_mat = np.full((n_times, n_stations), np.nan)
     spread_mat = np.full((n_times, n_stations), np.nan)
 
-    # 1. Compute IDW Expected Value & Spatial Spread
-    for s_col_idx, sid in enumerate(common_stations):
-        orig_idx = st_idx[sid]
-        dists = dist_mat[orig_idx, [st_idx[s] for s in common_stations]]
-        
-        # Candidate neighbors: distance > 0 and within 40 km
-        neighbor_mask = (dists > 0.05) & (dists <= 40.0)
-        neighbor_indices = np.where(neighbor_mask)[0]
-        
-        # Sort by distance and keep top k
-        sorted_neighbors = neighbor_indices[np.argsort(dists[neighbor_indices])][:SENSOR_K_NEIGHBOURS]
-        if len(sorted_neighbors) == 0:
+    # 1. IDW expected value and spatial spread
+    for s_col, sid in enumerate(common_stations):
+        dists = dist_mat[st_idx[sid], common_idx]
+        neighbour_mask = (dists > NEIGHBOUR_MIN_KM) & (dists <= NEIGHBOUR_MAX_KM)
+        neighbour_indices = np.where(neighbour_mask)[0]
+        nearest = neighbour_indices[np.argsort(dists[neighbour_indices])][:SENSOR_K_NEIGHBOURS]
+        if len(nearest) == 0:
             continue
 
-        nbr_dists = dists[sorted_neighbors]
-        weights = 1.0 / (nbr_dists ** 2)
+        weights = 1.0 / (dists[nearest] ** 2)
+        nbr_vals = pm25_vals[:, nearest]                       # (n_times, k)
+        valid = ~np.isnan(nbr_vals)
 
-        # Vectorized over all time steps
-        pm25_mat_vals = pm25_mat.to_numpy(dtype=float)
-        nbr_vals = pm25_mat_vals[:, sorted_neighbors]  # shape: (n_times, k)
-        valid_mask = ~np.isnan(nbr_vals)              # shape: (n_times, k)
-
-        w_expanded = np.tile(weights, (n_times, 1))
-        w_valid = np.where(valid_mask, w_expanded, 0.0)
+        w_valid = np.where(valid, weights[None, :], 0.0)
         w_sums = w_valid.sum(axis=1)
+        has_data = w_sums > 0
 
-        safe_times = w_sums > 0
+        clean_nbr = np.where(valid, nbr_vals, 0.0)
         exp_vals = np.full(n_times, np.nan)
-        clean_nbr = np.where(valid_mask, nbr_vals, 0.0)
-        exp_vals[safe_times] = (clean_nbr * w_valid).sum(axis=1)[safe_times] / w_sums[safe_times]
-        expected_mat[:, s_col_idx] = exp_vals
+        exp_vals[has_data] = (clean_nbr * w_valid).sum(axis=1)[has_data] / w_sums[has_data]
+        expected_mat[:, s_col] = exp_vals
 
-        # Spatial spread (weighted std dev)
-        clean_exp = np.where(safe_times[:, None], exp_vals[:, None], 0.0)
-        diff_sq = np.where(valid_mask, (clean_nbr - clean_exp) ** 2, 0.0)
+        clean_exp = np.where(has_data, exp_vals, 0.0)[:, None]
+        diff_sq = np.where(valid, (clean_nbr - clean_exp) ** 2, 0.0)
         spread = np.sqrt((diff_sq * w_valid).sum(axis=1) / np.maximum(w_sums, 1e-6))
-        spread_mat[:, s_col_idx] = np.where(safe_times, spread, np.nan)
+        spread_mat[:, s_col] = np.where(has_data, spread, np.nan)
 
-    # 2. Residuals and Historical Z-Scores
-    pm25_mat_vals = pm25_mat.to_numpy(dtype=float)
-    residuals = pm25_mat_vals - expected_mat
+    # 2. Residuals and station-specific z-scores
+    residuals = pm25_vals - expected_mat
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
         res_stds = np.nanstd(residuals, axis=0)
         res_means = np.nanmean(residuals, axis=0)
     res_stds = np.where(np.isnan(res_stds) | (res_stds < 1.0), 1.0, res_stds)
     res_means = np.where(np.isnan(res_means), 0.0, res_means)
-
     z_scores = (residuals - res_means[None, :]) / res_stds[None, :]
 
-    # 3. Persistence Counter
+    # 3. Persistence counter (consecutive hours with |z| >= threshold)
     persist_counts = np.zeros_like(z_scores)
     for j in range(n_stations):
-        c = 0
+        run = 0
         for t in range(n_times):
             z = z_scores[t, j]
             if not np.isnan(z) and abs(z) >= SENSOR_Z_FLAG:
-                c += 1
+                run += 1
             else:
-                c = 0
-            persist_counts[t, j] = c
+                run = 0
+            persist_counts[t, j] = run
 
-    # 4. 24h Rolling Correlation with Neighborhood Median
+    # 4. 24 h rolling correlation with the all-station median
     with np.errstate(all="ignore"):
-        nbr_medians = np.nanmedian(pm25_mat_vals, axis=1)
-    nbr_med_df = pd.Series(nbr_medians, index=times)
-
+        nbr_medians = np.asarray(np.nanmedian(pm25_vals, axis=1), dtype=float)
     corr24_mat = np.full((n_times, n_stations), np.nan)
-    for j, sid in enumerate(common_stations):
-        s_series = pd.Series(pm25_mat_vals[:, j], index=times)
-        rolling_corr = s_series.rolling(24, min_periods=12).corr(nbr_med_df).to_numpy(dtype=float)
-        corr24_mat[:, j] = rolling_corr
-
-    # Build summary at the station level (using latest 72h / full season statistics)
-    station_summary_rows = []
-    station_name_map = dict(zip(stations_df["station_id"], stations_df["name"]))
-    station_region_map = dict(zip(stations_df["station_id"], stations_df["region"]))
-    station_coords_map = {
-        r["station_id"]: (r["lat"], r["lon"]) for _, r in stations_df.iterrows()
-    }
-
-    # Analyze the most recent valid 72-hour window
-    recent_slice = slice(-72, None) if n_times >= 72 else slice(0, None)
-
-    for j, sid in enumerate(common_stations):
-        name = station_name_map.get(sid, sid)
-        region = station_region_map.get(sid, "Delhi")
-        lat, lon = station_coords_map.get(sid, (np.nan, np.nan))
-
-        obs_recent = safe_nanmean(pm25_mat_vals[recent_slice, j])
-        exp_recent = safe_nanmean(expected_mat[recent_slice, j])
-        spr_recent = safe_nanmean(spread_mat[recent_slice, j])
-        res_recent = obs_recent - exp_recent if not np.isnan(obs_recent) and not np.isnan(exp_recent) else np.nan
-        z_recent = safe_nanmean(z_scores[recent_slice, j])
-        max_persist = int(safe_nanmax(persist_counts[recent_slice, j], default=0))
-        corr_recent = safe_nanmean(corr24_mat[recent_slice, j])
-
-        # Cross-pollutant check
-        pm10_arr = pm10_mat[sid].to_numpy(dtype=float) if sid in pm10_mat.columns else None
-        pm10_recent = safe_nanmean(pm10_arr[recent_slice]) if pm10_arr is not None else np.nan
-        ratio_inconsistent = False
-        if (
-            not np.isnan(obs_recent)
-            and not np.isnan(pm10_recent)
-            and pm10_recent > 0
-            and obs_recent > 1.25 * pm10_recent + 15
-        ):
-            ratio_inconsistent = True
-
-        # Status Classification
-        status = "OK"
-        reasons = []
-
-        if max_persist >= SENSOR_MIN_PERSIST_H and (np.isnan(corr_recent) or corr_recent < SENSOR_CORR_MIN):
-            status = "suspect"
-            direction = "higher" if z_recent > 0 else "lower"
-            reasons.append(
-                f"Persistent deviation ({max_persist} consecutive hours |z| >= {SENSOR_Z_FLAG}) "
-                f"measuring consistently {direction} than {SENSOR_K_NEIGHBOURS} nearest neighbors"
-            )
-            if not np.isnan(corr_recent) and corr_recent < SENSOR_CORR_MIN:
-                reasons.append(f"Low correlation with spatial neighborhood trend (r={corr_recent:.2f})")
-            if ratio_inconsistent:
-                reasons.append("Implausible PM2.5/PM10 physical ratio (> 1.2x PM10), indicating optical inlet drift")
-
-        elif max_persist >= 3 or abs(z_recent) >= 2.0 or (not np.isnan(corr_recent) and corr_recent < 0.4):
-            status = "watch"
-            reasons.append(
-                f"Moderate residual drift (|z|={abs(z_recent):.1f}) or transient divergence ({max_persist}h persistence)"
-            )
-            if not np.isnan(corr_recent) and corr_recent < 0.45:
-                reasons.append(f"Weak neighbor tracking (r={corr_recent:.2f})")
-        else:
-            reasons.append(f"Closely tracking spatial neighborhood (r={corr_recent:.2f}, residual within +/-{res_stds[j]:.1f} ug/m3)")
-
-        station_summary_rows.append(
-            {
-                "station_id": sid,
-                "name": name,
-                "region": region,
-                "lat": lat,
-                "lon": lon,
-                "observed_pm25": round(obs_recent, 1) if not np.isnan(obs_recent) else None,
-                "expected_pm25": round(exp_recent, 1) if not np.isnan(exp_recent) else None,
-                "expected_spread": round(spr_recent, 1) if not np.isnan(spr_recent) else None,
-                "residual_pm25": round(res_recent, 1) if not np.isnan(res_recent) else None,
-                "z_score": round(z_recent, 2) if not np.isnan(z_recent) else None,
-                "hours_persistent": max_persist,
-                "corr24h": round(corr_recent, 2) if not np.isnan(corr_recent) else None,
-                "status": status,
-                "reasons": "; ".join(reasons),
-            }
+    for j in range(n_stations):
+        corr24_mat[:, j] = rolling_corr_np(
+            np.asarray(pm25_vals[:, j], dtype=float), nbr_medians, 24, 12
         )
 
-    summary_df = pd.DataFrame(station_summary_rows)
-    return summary_df, pd.DataFrame(pm25_mat)
+    # Station-level summary over the most recent window
+    name_map = dict(zip(stations_df["station_id"], stations_df["name"]))
+    region_map = dict(zip(stations_df["station_id"], stations_df["region"]))
+    coords_map = {r["station_id"]: (r["lat"], r["lon"]) for _, r in stations_df.iterrows()}
+    recent: slice = slice(-RECENT_HOURS, None) if n_times >= RECENT_HOURS else slice(0, None)
+
+    rows: list[dict[str, Any]] = []
+    for j, sid in enumerate(common_stations):
+        lat, lon = coords_map.get(sid, (np.nan, np.nan))
+
+        obs = safe_nanmean(pm25_vals[recent, j])
+        exp = safe_nanmean(expected_mat[recent, j])
+        spr = safe_nanmean(spread_mat[recent, j])
+        res = obs - exp if not (np.isnan(obs) or np.isnan(exp)) else float("nan")
+        z_mean = safe_nanmean(z_scores[recent, j])
+        max_persist = int(safe_nanmax(persist_counts[recent, j], default=0.0))
+        corr = safe_nanmean(corr24_mat[recent, j])
+
+        # Cross-pollutant check
+        pm10_recent = float("nan")
+        if sid in pm10_mat.columns:
+            pm10_recent = safe_nanmean(pm10_mat[sid].to_numpy(dtype=float)[recent])
+        ratio_inconsistent = (
+            not np.isnan(obs) and not np.isnan(pm10_recent)
+            and pm10_recent > 0 and obs > 1.25 * pm10_recent + 15
+        )
+
+        status = "OK"
+        reasons: list[str] = []
+
+        if np.isnan(obs) or np.isnan(exp):
+            status = "unassessed"
+            reasons.append("Not assessed: no recent data or no valid neighbours within "
+                           f"{NEIGHBOUR_MAX_KM:.0f} km")
+        else:
+            low_corr = bool(np.isnan(corr) or corr < SENSOR_CORR_MIN)
+            large_dev = (not np.isnan(z_mean)) and abs(z_mean) >= SENSOR_Z_FLAG
+            if max_persist >= SENSOR_MIN_PERSIST_H and (low_corr or large_dev):
+                status = "suspect"
+                direction = "higher" if z_mean > 0 else "lower"
+                reasons.append(
+                    f"Persistent deviation ({max_persist} consecutive hours with |z| >= {SENSOR_Z_FLAG:g}), "
+                    f"reading {direction} than its {SENSOR_K_NEIGHBOURS} nearest neighbours would suggest"
+                )
+                if low_corr and not np.isnan(corr):
+                    reasons.append(f"Low correlation with the regional trend (r={corr:.2f})")
+                if ratio_inconsistent:
+                    reasons.append("PM2.5 is implausibly high compared with PM10, so the PM2.5 measurement may be affected")
+            elif (max_persist >= WATCH_PERSIST_H
+                  or (not np.isnan(z_mean) and abs(z_mean) >= WATCH_Z)
+                  or (not np.isnan(corr) and corr < WATCH_CORR)):
+                status = "watch"
+                reasons.append(
+                    f"Moderate or short-lived deviation (average |z|={abs(z_mean):.1f}, "
+                    f"{max_persist} h persistence)"
+                )
+                if not np.isnan(corr) and corr < WATCH_CORR:
+                    reasons.append(f"Weak tracking of the regional trend (r={corr:.2f})")
+            else:
+                reasons.append(
+                    f"Tracking its neighbourhood (r={corr:.2f}, typical residual about +/-{res_stds[j]:.1f} ug/m3)"
+                )
+
+        rows.append({
+            "station_id": sid,
+            "name": name_map.get(sid, sid),
+            "region": region_map.get(sid, "Delhi"),
+            "lat": lat,
+            "lon": lon,
+            "observed_pm25": round(obs, 1) if not np.isnan(obs) else None,
+            "expected_pm25": round(exp, 1) if not np.isnan(exp) else None,
+            "expected_spread": round(spr, 1) if not np.isnan(spr) else None,
+            "residual_pm25": round(res, 1) if not np.isnan(res) else None,
+            "z_score": round(z_mean, 2) if not np.isnan(z_mean) else None,
+            "hours_persistent": max_persist,
+            "corr24h": round(corr, 2) if not np.isnan(corr) else None,
+            "status": status,
+            "reasons": "; ".join(reasons),
+        })
+
+    return pd.DataFrame(rows), pd.DataFrame(pm25_mat)
 
 
 def validate_sensor_check(
     hourly_df: pd.DataFrame, stations_df: pd.DataFrame
 ) -> dict[str, Any]:
-    """Synthetic Fault Injection Validation:
-    Injects realistic faults into healthy stations:
-      - 3 stations with +40% progressive calibration drift
-      - 2 stations with zero/near-zero flatlines (sensor drop/inlet failure)
-    Evaluates Detection Rate (Recall) on injected faults and False-Alarm Rate on untouched stations.
+    """Synthetic fault-injection test.
+
+    Takes the 5 stations with the most complete PM2.5 data and corrupts a copy of their last
+    48 hours: 3 get a +45% calibration offset, 2 drop to a flat 3 ug/m3 (inlet blockage).
+    All other stations are left untouched. Reports how many injected stations are flagged
+    (detection rate) and how many untouched stations are flagged (false-alarm rate), both for
+    'suspect or watch' and for 'suspect' only.
+    Note: the corrupted stations also act as neighbours of the untouched ones, which is a
+    deliberately harsh test for false alarms.
     """
+    in_data = set(hourly_df["station_id"].unique())
+    stations = [str(s) for s in stations_df["station_id"].tolist() if str(s) in in_data]
+    if len(stations) < 10:
+        return {"error": "Need at least 10 stations with data to run the validation",
+                "total_stations_evaluated": len(stations), "benchmark_passed": False}
+
+    completeness = hourly_df.groupby("station_id")["pm25"].apply(lambda s: float(s.notna().mean()))
+    ranked = sorted(stations, key=lambda s: (-float(completeness.get(s, 0.0)), s))
+    test_stations = ranked[:5]
+    untouched = [s for s in stations if s not in test_stations]
+
     df_copy = hourly_df.copy()
-    stations = stations_df["station_id"].unique()
-    # Choose 5 test stations with high completeness
-    test_stations = list(stations[:5])
-    untested_stations = list(stations[5:])
+    last_times = sorted(df_copy["time"].unique())[-48:]
+    in_last = df_copy["time"].isin(last_times)
 
-    # Inject Faults in the last 48 hours
-    last_times = [x for x in list(df_copy["time"].unique())[-48:]]
-
-    # Inject +40% drift on stations 0, 1, 2
     drift_stations = test_stations[:3]
-    mask_drift = (df_copy["station_id"].isin(drift_stations)) & (df_copy["time"].isin(last_times))
-    df_copy.loc[mask_drift, "pm25"] *= 1.45
-
-    # Inject zero flatline on stations 3, 4
-    flatline_stations = test_stations[3:5]
-    mask_flat = (df_copy["station_id"].isin(flatline_stations)) & (df_copy["time"].isin(last_times))
+    flat_stations = test_stations[3:5]
+    mask_drift = df_copy["station_id"].isin(drift_stations) & in_last
+    mask_flat = df_copy["station_id"].isin(flat_stations) & in_last
+    df_copy.loc[mask_drift, "pm25"] = df_copy.loc[mask_drift, "pm25"] * 1.45
     df_copy.loc[mask_flat, "pm25"] = 3.0
 
-    injected_stations = set(test_stations)
-
-    # Run sensor check on corrupted data
     val_summary, _ = run_sensor_check(df_copy, stations_df)
+    status_by_station = dict(zip(val_summary["station_id"], val_summary["status"]))
 
-    flagged_suspect = set(val_summary[val_summary["status"] == "suspect"]["station_id"])
-    flagged_watch = set(val_summary[val_summary["status"].isin(["suspect", "watch"])]["station_id"])
+    def flagged(ids: list[str], levels: set[str]) -> int:
+        return sum(1 for s in ids if status_by_station.get(s) in levels)
 
-    true_positives = len(injected_stations.intersection(flagged_watch))
-    false_positives = len(set(untested_stations).intersection(flagged_suspect))
-    _true_negatives = len(untested_stations) - false_positives
+    both = {"suspect", "watch"}
+    only = {"suspect"}
+    n_inj, n_unt = len(test_stations), max(len(untouched), 1)
 
-    detection_rate_pct = round((true_positives / len(injected_stations)) * 100.0, 1)
-    false_alarm_rate_pct = round((false_positives / max(len(untested_stations), 1)) * 100.0, 1)
+    tp_both, tp_only = flagged(test_stations, both), flagged(test_stations, only)
+    fp_both, fp_only = flagged(untouched, both), flagged(untouched, only)
 
-    metrics = {
+    detection_pct = round(100.0 * tp_both / n_inj, 1)
+    false_alarm_pct = round(100.0 * fp_both / n_unt, 1)
+
+    return {
         "total_stations_evaluated": len(stations),
-        "injected_fault_stations": len(injected_stations),
-        "fault_types": ["+45% progressive calibration drift", "Inlet obstruction / flatline drop to baseline"],
-        "true_positives_detected": true_positives,
-        "detection_rate_pct": detection_rate_pct,
-        "false_alarm_rate_pct": false_alarm_rate_pct,
-        "benchmark_passed": bool(detection_rate_pct >= 80.0 and false_alarm_rate_pct <= 10.0),
-        "methodology": "Inverse-Distance Weighting (k=4, 40km corridor) + Persistent Z-Score residual analysis",
+        "injected_fault_stations": n_inj,
+        "untouched_stations": len(untouched),
+        "fault_types": ["+45% calibration offset (last 48 h)", "Inlet blockage: flat drop to 3 ug/m3 (last 48 h)"],
+        "true_positives_detected": tp_both,
+        "detection_rate_pct": detection_pct,
+        "false_alarm_rate_pct": false_alarm_pct,
+        "detection_rate_suspect_only_pct": round(100.0 * tp_only / n_inj, 1),
+        "false_alarm_rate_suspect_only_pct": round(100.0 * fp_only / n_unt, 1),
+        "definition": "detection and false-alarm rates count stations flagged 'suspect' or 'watch'; "
+                      "the *_suspect_only values count 'suspect' alone",
+        "benchmark_passed": detection_pct >= 80.0 and false_alarm_pct <= 10.0,
+        "methodology": f"Inverse-distance weighting (k={SENSOR_K_NEIGHBOURS}, {NEIGHBOUR_MAX_KM:.0f} km) "
+                       "with persistent z-score residual analysis",
     }
-    return metrics
 
 
-def main():
+def main() -> None:
     station_hourly_path = PROCESSED / "station_hourly_final.csv"
     stations_ref_path = REF / "stations.csv"
 
@@ -339,46 +357,47 @@ def main():
 
     print("Loading station observations and geography...")
     stations_df = pd.read_csv(stations_ref_path)
-    hourly_df = pd.read_csv(
-        station_hourly_path,
-        usecols=["time", "station_id", "pm25", "pm10", "no2", "co"],
-    )
+    hourly_df = pd.read_csv(station_hourly_path, usecols=["time", "station_id", "pm25", "pm10"])
 
-    print(f"Running spatial neighborhood consistency check on {len(stations_df)} stations...")
+    print(f"Running spatial neighbourhood consistency check on {len(stations_df)} stations...")
     summary_df, _ = run_sensor_check(hourly_df, stations_df)
 
     out_csv = PROCESSED / "sensor_health.csv"
     tag_synthetic(summary_df).to_csv(out_csv, index=False)
 
-    print("Running synthetic fault-injection validation benchmark...")
+    print("Running synthetic fault-injection validation...")
     val_report = validate_sensor_check(hourly_df, stations_df)
     out_json = PROCESSED / "sensor_validation_report.json"
     with open(out_json, "w") as f:
         json.dump(val_report, f, indent=2)
 
     print("=" * 80)
-    print(" POLLUTION BLAME LEDGER - SENSOR HEALTH ASSESSMENT REPORT ")
+    print(" POLLUTION BLAME LEDGER - SENSOR HEALTH ASSESSMENT ")
     print("=" * 80)
-    print(f"Total Stations Assessed: {len(summary_df)}")
-    print("\nStatus Breakdown:")
-    print(pd.Series(summary_df["status"].value_counts()).to_string())
+    print(f"Total stations assessed: {len(summary_df)}")
+    print("\nStatus breakdown:")
+    print(summary_df["status"].value_counts().to_string())
 
-    if bool((summary_df["status"] != "OK").any()):
-        print("\nStations on Watch / Suspect List:")
-        flagged = summary_df[summary_df["status"] != "OK"][
-            ["station_id", "name", "observed_pm25", "expected_pm25", "residual_pm25", "status", "reasons"]
-        ]
-        print(pd.DataFrame(flagged).to_string(index=False))
+    flagged_df = summary_df[summary_df["status"].isin(["watch", "suspect"])]
+    if len(flagged_df) > 0:
+        print("\nStations on the watch / suspect list:")
+        cols = ["station_id", "name", "observed_pm25", "expected_pm25", "residual_pm25", "status", "reasons"]
+        print(flagged_df[cols].to_string(index=False))
     else:
-        print("\nAll monitoring stations currently track within acceptable spatial tolerances.")
+        print("\nAll assessed stations track within their neighbourhood tolerance.")
 
-    print("\nValidation Benchmark Results (Synthetic Fault Injection):")
-    print(f"  • Detection Rate (Recall) : {val_report['detection_rate_pct']}% (Target: >=80%)")
-    print(f"  • False-Alarm Rate        : {val_report['false_alarm_rate_pct']}% (Target: <=10%)")
-    print(f"  • Benchmark Status        : {'PASS' if val_report['benchmark_passed'] else 'REVIEW'}")
+    print("\nValidation results (synthetic fault injection):")
+    if "error" in val_report:
+        print(f"  Skipped: {val_report['error']}")
+    else:
+        print(f"  Detection rate (suspect or watch)  : {val_report['detection_rate_pct']}% (target >= 80%)")
+        print(f"  False-alarm rate (suspect or watch): {val_report['false_alarm_rate_pct']}% (target <= 10%)")
+        print(f"  Detection / false alarms, suspect only: "
+              f"{val_report['detection_rate_suspect_only_pct']}% / {val_report['false_alarm_rate_suspect_only_pct']}%")
+        print(f"  Benchmark: {'PASS' if val_report['benchmark_passed'] else 'REVIEW'}")
 
-    print(f"\nSaved sensor health status -> {out_csv}")
-    print(f"Saved validation report    -> {out_json}")
+    print(f"\nSaved sensor health -> {out_csv}")
+    print(f"Saved validation    -> {out_json}")
     print("=" * 80)
 
 

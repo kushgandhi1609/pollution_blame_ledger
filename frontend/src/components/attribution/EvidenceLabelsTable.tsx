@@ -117,8 +117,15 @@ export const EvidenceLabelsTable: React.FC<EvidenceLabelsTableProps> = ({ labels
                   </td>
 
                   <td style={{ padding: '12px 16px', verticalAlign: 'top', fontWeight: 700, color: 'var(--color-heading)' }}>
-                    {row.share_mid_pct ? `${row.share_mid_pct.toFixed(1)}%` : '—'}
-                  </td>
+                <div style={{ fontSize: '13px' }}>
+                  {row.share_mid_pct ? `${row.share_mid_pct.toFixed(1)}%` : '—'}
+                </div>
+                {row.share_low_pct && row.share_high_pct && (
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 400, marginTop: '2px' }}>
+                    {row.share_low_pct.toFixed(1)}% – {row.share_high_pct.toFixed(1)}%
+                  </div>
+                )}
+              </td>
 
                   <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
                     <Badge variant={badgeVariant} size="sm">

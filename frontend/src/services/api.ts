@@ -50,6 +50,9 @@ export const api = {
   getEpisodeDetail: (episodeId: number): Promise<EpisodeDetail> =>
     fetch(`${BASE_URL}/episodes/${episodeId}`).then(handleResponse<EpisodeDetail>),
 
+  getEpisodeByDate: (date: string): Promise<EpisodeDetail | null> =>
+    fetch(`${BASE_URL}/episodes/by-date?date=${date}`).then(handleResponse<EpisodeDetail | null>),
+
   getEpisodeAttribution: (episodeId: number): Promise<LedgerEntry[]> =>
     fetch(`${BASE_URL}/episodes/${episodeId}/attribution`).then(handleResponse<LedgerEntry[]>),
 

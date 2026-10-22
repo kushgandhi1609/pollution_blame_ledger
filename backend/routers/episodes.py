@@ -32,6 +32,20 @@ def list_episodes(
     return episodes
 
 
+@router.get("/by-date", response_model=EpisodeDetail | None)
+def get_episode_by_date(date: str):
+    """Maps a specific date to its containing pollution episode, if any."""
+    ep_list = get_episodes_list()
+    match = None
+    for ep in ep_list:
+        if ep["start"] <= date <= ep["end"]:
+            match = ep
+            break
+    if not match:
+        return None
+    return get_episode_detail(match["episode_id"])
+
+
 @router.get("/{episode_id}", response_model=EpisodeDetail)
 def get_episode(episode_id: int):
     """Returns comprehensive episode details including attribution, evidence labels, actions, and hourly timeseries."""
@@ -89,3 +103,23 @@ def get_episode_timeseries(episode_id: int) -> list[dict[str, Any]]:
     if not detail:
         raise HTTPException(status_code=404, detail=f"Episode {episode_id} not found.")
     return detail["timeseries"]
+
+
+@router.get("/by-date", response_model=EpisodeDetail | None)
+def get_episode_by_date(date: str):
+    """Maps a specific date to its containing pollution episode, if any."""
+    # 1. Get the episodes list to find start/end ranges
+    ep_list = get_episodes_list()
+
+    # 2. Find an episode that contains the provided date
+    match = None
+    for ep in ep_list:
+        if ep["start"] <= date <= ep["end"]:
+            match = ep
+            break
+
+    if not match:
+        return None # Frontend will handle this as "No severe episode found"
+
+    # 3. Reuse existing detail logic to return the full attribution/evidence set
+    return get_episode_detail(match["episode_id"])

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Header, ActiveTab } from './components/layout/Header';
 import { KpiBanner } from './components/layout/KpiBanner';
 import { AttributionView } from './components/attribution/AttributionView';
+import { DateAttributionView } from './components/attribution/DateAttributionView';
 import { SensorsView } from './components/sensors/SensorsView';
 import { PolicyView } from './components/policy/PolicyView';
 import { ForecastAdvisorView } from './components/forecast/ForecastAdvisorView';
@@ -27,6 +28,7 @@ import { AlertCircle } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('attribution');
+  const [dateTab, setDateTab] = useState<boolean>(false);
   const [isMethodologyOpen, setIsMethodologyOpen] = useState<boolean>(false);
 
   // Global Analytical State
@@ -151,12 +153,33 @@ export const App: React.FC = () => {
     };
   }, [selectedEpisodeId]);
 
+  const handleDateSelect = async (date: string) => {
+    if (!date) return;
+    setEpisodeLoading(true);
+    try {
+      const detail = await api.getEpisodeByDate(date);
+      if (detail) {
+        setSelectedEpisodeId(detail.summary.episode_id);
+        setEpisodeDetail(detail);
+      } else {
+        setEpisodeDetail(null);
+      }
+    } catch (err) {
+      console.error('Error fetching episode by date:', err);
+    } finally {
+      setEpisodeLoading(false);
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* 1. Header with Brand Lockup & Navigation */}
       <Header
         activeTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab)}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setDateTab(false);
+        }}
         onOpenMethodology={() => setIsMethodologyOpen(true)}
       />
 
@@ -218,15 +241,43 @@ export const App: React.FC = () => {
         ) : (
           <>
             {activeTab === 'attribution' && (
-              <AttributionView
-                episodes={episodes}
-                selectedEpisodeId={selectedEpisodeId}
-                onSelectEpisode={(id) => setSelectedEpisodeId(id)}
-                selectedSeason={selectedSeason}
-                onSelectSeason={(s) => setSelectedSeason(s)}
-                episodeDetail={episodeDetail}
-                loading={episodeLoading}
-              />
+              <>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+                  <button
+                    onClick={() => setDateTab(!dateTab)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: dateTab ? 'var(--color-primary)' : 'var(--color-surface)',
+                      color: dateTab ? '#fff' : 'var(--color-text)',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {dateTab ? '← Back to Episode Catalog' : '📅 Explore by Date'}
+                  </button>
+                </div>
+                {dateTab ? (
+                  <DateAttributionView
+                    episodes={episodes}
+                    onDateSelect={handleDateSelect}
+                    loading={episodeLoading}
+                  />
+                ) : (
+                  <AttributionView
+                    episodes={episodes}
+                    selectedEpisodeId={selectedEpisodeId}
+                    onSelectEpisode={(id) => setSelectedEpisodeId(id)}
+                    selectedSeason={selectedSeason}
+                    onSelectSeason={(s) => setSelectedSeason(s)}
+                    episodeDetail={episodeDetail}
+                    loading={episodeLoading}
+                  />
+                )}
+              </>
             )}
 
             {activeTab === 'sensors' && (
